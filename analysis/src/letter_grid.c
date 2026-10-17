@@ -67,7 +67,7 @@ void check_letter_grid(struct letter_grid *g) {
         size_t len = end - g->row_start[r];
         if (len > max) max = len;
     }
-    printf("grid : %zu rows, %zu letters max per row\n", g->nb_rows, max);
+    // printf("grid : %zu rows, %zu letters max per row\n", g->nb_rows, max);
     for (size_t r = 0; r < g->nb_rows; r++) {
         size_t end = (r + 1 < g->nb_rows) ? g->row_start[r + 1]
                                           : g->letters->count;
