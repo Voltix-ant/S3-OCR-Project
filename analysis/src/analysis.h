@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <SDL2/SDL.h>
-#include "matrix.h"
+#include "common/src/matrix.h"
 #include "region.h"
 #include "components.h"
 #include "letter_grid.h"

@@ -2,6 +2,7 @@
 #include <err.h>
 #include "image_io.h"
 #include "analysis.h"
+#include "common/src/matrix.h"
 
 int main(int argc, char **argv) {
     if (argc != 2)

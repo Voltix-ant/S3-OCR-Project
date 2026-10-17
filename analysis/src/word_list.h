@@ -1,7 +1,7 @@
 #ifndef WORD_LIST_H
 #define WORD_LIST_H
 
-#include "matrix.h"
+#include "common/src/matrix.h"
 #include "region.h"
 #include "letter_grid.h"
 #include "components.h"

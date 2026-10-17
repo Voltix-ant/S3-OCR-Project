@@ -1,7 +1,7 @@
 #ifndef IMAGE_IO_H
 #define IMAGE_IO_H
 
-#include "matrix.h"
+#include "common/src/matrix.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>

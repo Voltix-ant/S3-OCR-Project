@@ -1,7 +1,7 @@
 #ifndef CLASSIFICATION_H
 #define CLASSIFICATION_H
 
-#include "matrix.h"
+#include "common/src/matrix.h"
 #include "region.h"
 #include "projection.h"
 #include <stdlib.h>

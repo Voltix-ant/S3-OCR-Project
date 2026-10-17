@@ -1,7 +1,7 @@
 #ifndef PROJECTION_H
 #define PROJECTION_H
 
-#include "matrix.h"
+#include "common/src/matrix.h"
 #include <stdlib.h>
 
 struct px_count_arr {

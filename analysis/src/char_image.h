@@ -2,7 +2,7 @@
 #define CHAR_IMAGE_H
 
 #include "components.h"
-#include "matrix.h"
+#include "common/src/matrix.h"
 #include <math.h>
 
 #define CHAR_RATIO 28

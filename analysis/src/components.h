@@ -1,7 +1,7 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include "matrix.h"
+#include "common/src/matrix.h"
 #include <err.h>
 #include <stdlib.h>
 #include <math.h>
