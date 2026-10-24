@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I. -Wall -Wextra -fsanitize=address -g
+CFLAGS = -I. -Icommon/src -Ianalysis/src -Ineural-network/src -Wall -Wextra -fsanitize=address -g
 LIBFLAGS = $(shell sdl2-config --cflags --libs) -lSDL2_image -lm
 
 
@@ -20,7 +20,7 @@ NEURAL_NETWORK_OBJ  = $(NEURAL_NETWORK_MAIN:.c=.o) $(NEURAL_NETWORK_SRC:.c=.o)
 
 # Whole project :
 EXEC_NAME = ocr
-SRC = main.c $(COMMON_SRC) $(ANALYSIS_SRC)
+SRC = main.c $(COMMON_SRC) $(ANALYSIS_SRC) $(NEURAL_NETWORK_SRC)
 OBJ = $(SRC:.c=.o)
 
 all: $(OBJ)
