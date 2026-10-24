@@ -23,7 +23,6 @@ int main(int argc, char **argv) {
     binarize_matrix(mat, mat->width/20, 10);
     SDL_Surface *binarized = matrix_to_img(mat);
     save_result(binarized,"binarized.png");
-    SDL_FreeSurface(binarized);
 
     // run the actual analysis
     struct analysis *a = analysis_run(mat);
@@ -37,13 +36,14 @@ int main(int argc, char **argv) {
         printf("word %zu : %zu letters\n", w, analysis_word_len(a, w));
 
     // Create debug_images
-    analysis_save_debug(a, s);
+    analysis_save_debug(a, binarized);
 
     // Destroy everything
     analysis_destroy(a);
 
 
     destroy_matrix(mat);
+    SDL_FreeSurface(binarized);
     SDL_FreeSurface(s);
     return 0;
 }
