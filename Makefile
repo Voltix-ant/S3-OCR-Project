@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -I. -Icommon/src -Ianalysis/src -Ineural-network/src -Wall -Wextra -fsanitize=address -g
+CFLAGS = -I. -Icommon/src -Ianalysis/src -Ineural-network/src -Wall -Wextra \
+		 -fsanitize=address -g
 LIBFLAGS = $(shell sdl2-config --cflags --libs) -lSDL2_image -lm
 
 
@@ -15,12 +16,22 @@ ANALYSIS_OBJ  = $(ANALYSIS_MAIN:.c=.o) $(ANALYSIS_SRC:.c=.o)
 
 # Neural Network files :
 NEURAL_NETWORK_MAIN = neural_network/src/neural_network_main.c
-NEURAL_NETWORK_SRC  = $(filter-out $(NEURAL_NETWORK_MAIN),$(wildcard neural_network/src/*.c))
+NEURAL_NETWORK_SRC  = \
+	$(filter-out $(NEURAL_NETWORK_MAIN),$(wildcard neural_network/src/*.c))
 NEURAL_NETWORK_OBJ  = $(NEURAL_NETWORK_MAIN:.c=.o) $(NEURAL_NETWORK_SRC:.c=.o)
+
+# UI files :
+UI_SRC = $(wildcard ui/src/*.c)
+UI_OBJ = $(UI_SRC:.c=.o)
+
+# Pretreatment file :
+PRETREATMENT_SRC = $(wildcard pretreatment/src/*.c)
+PRETREATMENT_OBJ = $(PRETREATMENT_SRC:.c=.o)
 
 # Whole project :
 EXEC_NAME = ocr
-SRC = main.c $(COMMON_SRC) $(ANALYSIS_SRC) $(NEURAL_NETWORK_SRC)
+SRC = main.c $(COMMON_SRC) $(ANALYSIS_SRC) $(NEURAL_NETWORK_SRC) \
+	  $(PRETREATMENT_SRC) $(UI_SRC)
 OBJ = $(SRC:.c=.o)
 
 all: $(OBJ)
@@ -44,5 +55,9 @@ clean:
 	$(RM) $(ANALYSIS_OBJ) analysis_test
 	# neural network :
 	$(RM) $(NEURAL_NETWORK_OBJ) neural_network_test
+	# ui :
+	$(RM) $(UI_OBJ)
+	# pretreatment
+	$(RM) $(PRETREATMENT_OBJ)
 
 .PHONY: all analysis neuralnetwork clean

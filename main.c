@@ -1,5 +1,5 @@
-#include "ui.h"
-#include "pretreatment.h"
+#include "ui/src/ui.h"
+#include "pretreatment/src/pretreatment.h"
 
 int main(int argc, char *argv[])
 {
