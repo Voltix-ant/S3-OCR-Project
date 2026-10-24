@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
     }
 
 	SDL_DestroyTexture(og_tex);
+	IMG_Quit();
     terminate(window, renderer);
 
     return 0;
