@@ -42,5 +42,7 @@ clean:
 	$(RM) $(EXEC_NAME) main.o $(COMMON_OBJ)
 	# analysis :
 	$(RM) $(ANALYSIS_OBJ) analysis_test
+	# neural network :
+	$(RM) $(NEURAL_NETWORK_OBJ) neural_network_test
 
-.PHONY: all analysis clean
+.PHONY: all analysis neuralnetwork clean
