@@ -65,10 +65,11 @@ void draw_letter_grid(SDL_Surface *s, struct letter_grid *g, int color) {
 }
 
 void save_result(SDL_Surface *s, char *filename) {
-    mkdir("detec_steps", 0755);
+    mkdir("steps", 0755);
     if (strlen(filename) > 100) 
         errx(1, "save_result : filename too long");
-    char name[120] = "detec_steps/";
+    char name[120] = "steps/";
     strcat(name,filename);
-    IMG_SavePNG(s, name);
+    if (IMG_SavePNG(s, name) != 0)
+        errx(1, "%s", IMG_GetError());
 }

@@ -4,6 +4,8 @@
 #include "analysis.h"
 #include "common/src/matrix.h"
 
+#include "debug_draw.h"
+
 int main(int argc, char **argv) {
     if (argc != 2)
         errx(1, "Incorrect number of parameters");
@@ -11,8 +13,18 @@ int main(int argc, char **argv) {
     // Generate matrix from the image (replace preproceesing)
     SDL_Surface *s = load_image(argv[1]);
     struct matrix *mat = img_to_matrix(s);
+    
+    // Save grayscaled version
+    SDL_Surface *grayscale = matrix_to_img(mat);
+    save_result(grayscale,"grayscale.png");
+    SDL_FreeSurface(grayscale);
 
-    // ruu the actual analysis
+    // Save binarised version
+    binarize_matrix(mat, mat->width/20, 10);
+    SDL_Surface *binarized = matrix_to_img(mat);
+    save_result(binarized,"binarized.png");
+
+    // run the actual analysis
     struct analysis *a = analysis_run(mat);
     if (!a)
         errx(1, "Analysis failed : no grid found");
@@ -24,11 +36,14 @@ int main(int argc, char **argv) {
         printf("word %zu : %zu letters\n", w, analysis_word_len(a, w));
 
     // Create debug_images
-    analysis_save_debug(a, s);
+    analysis_save_debug(a, binarized);
 
     // Destroy everything
     analysis_destroy(a);
+
+
     destroy_matrix(mat);
+    SDL_FreeSurface(binarized);
     SDL_FreeSurface(s);
     return 0;
 }
