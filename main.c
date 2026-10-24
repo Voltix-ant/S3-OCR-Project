@@ -1,5 +1,8 @@
 #include "ui/src/ui.h"
 #include "pretreatment/src/pretreatment.h"
+#include "common/src/matrix.h"
+
+#include "analysis/src/debug_draw.h"
 
 int main(int argc, char *argv[])
 {
@@ -58,7 +61,6 @@ int main(int argc, char *argv[])
 
 	// Creation of the rendering texture
 	SDL_Texture *og_tex = SDL_CreateTextureFromSurface(renderer, og_img);
-	SDL_FreeSurface(og_img);
 	if (!og_tex)
 	{
 			printf("Error: couldn't create image texture\n");
@@ -99,6 +101,12 @@ int main(int argc, char *argv[])
                 slider.cursor.y = slider.axis.y - 14;
 
                 // Update the buttons' positions (TODO)
+            } else if (event.type == SDL_KEYDOWN && 
+                    event.key.keysym.sym == SDLK_RETURN) {
+                SDL_Surface *rot = rotate_surface(og_img, slider.angle);
+                struct matrix *mat = surface_to_matrix(rot);
+                save_result(rot,"rotation.png");
+                SDL_FreeSurface(rot);
             }
 
             update_slider(&slider, &event);
@@ -142,6 +150,7 @@ int main(int argc, char *argv[])
     }
 
 	SDL_DestroyTexture(og_tex);
+	SDL_FreeSurface(og_img);
     terminate(window, renderer);
 
     return 0;
