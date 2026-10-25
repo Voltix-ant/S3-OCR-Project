@@ -19,7 +19,7 @@ int init_window(SDL_Window **window, SDL_Renderer **renderer)
             SDL_WINDOW_RESIZABLE
             );
 
-    if (!window)
+    if (!*window)
     {
         printf("SDL_CreateWindow() failure: %s\n", SDL_GetError());
         return 1;
@@ -31,7 +31,7 @@ int init_window(SDL_Window **window, SDL_Renderer **renderer)
             SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC
             );
 
-    if (!renderer)
+    if (!*renderer)
     {
         printf("SDL_CreateRenderer() failure: %s\n", SDL_GetError());
         SDL_DestroyWindow(*window);

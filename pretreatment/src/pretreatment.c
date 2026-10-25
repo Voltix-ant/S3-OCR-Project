@@ -143,7 +143,7 @@ int adaptive_threshold(SDL_Surface *surface)
             Uint8 r, g, b;
             SDL_GetRGB(curpixel, surface->format, &r, &g, &b);
 
-            if (r * count < sum * ((float)1.0 - t))
+            if (r * count < sum * ((double)1.0 - t))
             {
                 set_pixel(surface, x, y, black);
             }
@@ -153,4 +153,80 @@ int adaptive_threshold(SDL_Surface *surface)
 
     free(intimg);
     return 0;
+}
+
+static int gray_at(SDL_Surface *s, int x, int y) {
+    /* This function return the color of the pixel of the rotated image, if 
+       the pixel is outside the original image, we put a white px */
+    if (x < 0 || y < 0 || x >= s->w || y >= s->h) return 255;
+    return (get_pixel(s, x, y) >> 16) & 0xFF;
+}
+
+SDL_Surface *rotate_surface(SDL_Surface *src, double angle_deg) {
+    /* This function rotate the image surface acording an angle, the returned
+    surface is bigger than the given one to keep all the informations, part of
+    the surface that ar not covered by the original image are put in white*/
+    if (!src || src->format->BytesPerPixel != 4) return NULL;
+
+    double a = angle_deg * 3.14159265358979323846 / 180.0;
+    double c = cos(a), s = sin(a);
+    int w = src->w, h = src->h;
+    // Determinate dest surface dimensions
+    int nw = (int)ceil(fabs(w * c) + fabs(h * s));
+    int nh = (int)ceil(fabs(w * s) + fabs(h * c));
+
+    SDL_Surface *dst = SDL_CreateRGBSurfaceWithFormat(
+            0, nw, nh, 32, SDL_PIXELFORMAT_ARGB8888);
+    if (!dst) return NULL;
+
+    Uint32 white = SDL_MapRGB(dst->format, 255, 255, 255);
+    Uint32 black = SDL_MapRGB(dst->format, 0, 0, 0);
+    double cx = w / 2.0, cy = h / 2.0, ncx = nw / 2.0, ncy = nh / 2.0;
+
+    for (int y = 0; y < nh; y++)
+    {
+        for (int x = 0; x < nw; x++)
+        {
+            // inverted rotation : destination pixel -> source pixel
+            double dx = x + 0.5 - ncx, dy = y + 0.5 - ncy;
+            double sx = cx + dx * c + dy * s - 0.5;
+            double sy = cy - dx * s + dy * c - 0.5;
+
+            int x0 = (int)floor(sx), y0 = (int)floor(sy);
+            double fx = sx - x0, fy = sy - y0;
+
+            double v = gray_at(src, x0,     y0)     * (1 - fx) * (1 - fy)
+                     + gray_at(src, x0 + 1, y0)     * fx       * (1 - fy)
+                     + gray_at(src, x0,     y0 + 1) * (1 - fx) * fy
+                     + gray_at(src, x0 + 1, y0 + 1) * fx       * fy;
+
+            set_pixel(dst, x, y, v < 128 ? black : white);
+        }
+    }
+    return dst;
+}
+
+struct matrix *surface_to_matrix(SDL_Surface *s) {
+    struct matrix *mat = malloc(sizeof(struct matrix));
+    if (!mat)
+        errx(1, "img_to_matrix : Couldn't allocate memory");
+    mat->width = s->w;
+    mat->height = s->h;
+    mat->data = malloc(mat->height*sizeof(char *));
+    if (!mat->data)
+        errx(1, "img_to_matrix : Couldn't allocate memory");
+    
+    SDL_LockSurface(s);
+    for (int y = 0; y < s->h; y++) {
+        mat->data[y] = malloc(mat->width*sizeof(unsigned char));
+        if (!mat->data[y])
+            errx(1, "img_to_matrix : Couldn't allocate memory");
+        for (int x = 0; x < s->w; x++) {
+            Uint8 r, g, b, a;
+            SDL_GetRGBA(get_pixel(s, x, y), s->format, &r, &g, &b, &a);
+            mat->data[y][x] = r;
+        }
+    }
+    SDL_UnlockSurface(s);
+    return mat;
 }

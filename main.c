@@ -1,5 +1,8 @@
 #include "ui/src/ui.h"
 #include "pretreatment/src/pretreatment.h"
+#include "common/src/matrix.h"
+#include "analysis/src/analysis.h"
+#include "analysis/src/debug_draw.h"
 
 int main(int argc, char *argv[])
 {
@@ -58,7 +61,6 @@ int main(int argc, char *argv[])
 
 	// Creation of the rendering texture
 	SDL_Texture *og_tex = SDL_CreateTextureFromSurface(renderer, og_img);
-	SDL_FreeSurface(og_img);
 	if (!og_tex)
 	{
 			printf("Error: couldn't create image texture\n");
@@ -99,6 +101,26 @@ int main(int argc, char *argv[])
                 slider.cursor.y = slider.axis.y - 14;
 
                 // Update the buttons' positions (TODO)
+            } else if (event.type == SDL_KEYDOWN && 
+                    event.key.keysym.sym == SDLK_RETURN) {
+                // Rotate the surface
+                SDL_Surface *rot = rotate_surface(og_img, slider.angle);
+                // Translate it to a matrix
+                struct matrix *mat = surface_to_matrix(rot);
+                // Save an image of the rotated version
+                save_result(rot,"rotation.png");
+
+                // run analysis
+                struct analysis *a = analysis_run(mat);
+                if (!a) {
+                    errx(1,"Analysis failed...");
+                }
+                // Save debug images
+                analysis_save_debug(a, rot);
+                
+                analysis_destroy(a);
+                destroy_matrix(mat);
+                SDL_FreeSurface(rot);
             }
 
             update_slider(&slider, &event);
@@ -142,6 +164,7 @@ int main(int argc, char *argv[])
     }
 
 	SDL_DestroyTexture(og_tex);
+	SDL_FreeSurface(og_img);
     terminate(window, renderer);
 
     return 0;
