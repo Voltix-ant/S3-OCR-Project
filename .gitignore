@@ -2,6 +2,9 @@
 detec_steps/
 steps/
 
+# neural network saves:
+neural_network/saves/*.txt
+
 
 # Prerequisites
 *.d

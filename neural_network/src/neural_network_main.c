@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define SAVE_PATH "neural_network/saves/xor.txt"
+
 int main(void) {
 	srand(42);
 
