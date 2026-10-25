@@ -1,4 +1,5 @@
 #include "neural_network.h"
+#include "neural_save.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -46,6 +47,14 @@ int main(void) {
 	printf("Starting the training\n");
 
 	neural_network_train(network, &dataset, 2000, 0.1);
+
+	int res = neural_network_save(network, SAVE_PATH);
+	if (res == -1) {
+		printf("error while saving\n");
+	} else {
+		printf("settings saved at : %s\n", SAVE_PATH);
+	}
+
 
 	printf("\nPrediction after training:\n");
 	double output[2] = {0.0, 0.0};

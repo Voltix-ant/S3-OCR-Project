@@ -5,6 +5,7 @@
 #include <math.h>
 #include <time.h>
 #include "dataset.h"
+#include "neural_save.h"
 
 double xavier_uniform(int n_in, int n_out) {
 	double limit = sqrt(6.0 / (n_in + n_out));
