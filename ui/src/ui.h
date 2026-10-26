@@ -8,7 +8,6 @@ typedef struct {
     SDL_Rect rect; // button rectangle
     int is_active; // 1 if the associated function is useful at the moment
     int is_hovered; // 1 if the mouse cursor is on the button
-    void (*function)(void); // associated function
     SDL_Texture *text; // The transparent image containing the button's text
 } Button;
 
@@ -37,7 +36,7 @@ void update_slider(RotationDevice *slider, SDL_Event *event);
 void display_slider(SDL_Renderer *renderer, RotationDevice slider);
 
 void update_buttons_pos(Button *buttons, SDL_Rect panel);
-void update_buttons(Button *buttons, int nb_btns, SDL_Event *event);
+int update_buttons(Button *buttons, int nb_btns, SDL_Event *event);
 void display_buttons(SDL_Renderer *renderer, Button *buttons, int nb_btns);
 
 #endif

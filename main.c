@@ -84,7 +84,6 @@ int main(int argc, char *argv[])
 	// "Save image" button
 	buttons[0].is_active = 0; // Saving an image can only be done after analysis
 	buttons[0].is_hovered = 0;
-	buttons[0].function = save_image;
 	buttons[0].text = IMG_LoadTexture(renderer, "ui/assets/save_image.png");
 	if (!buttons[0].text)
 	{
@@ -97,7 +96,6 @@ int main(int argc, char *argv[])
 	// "Start analysis" button
 	buttons[1].is_active = 1;
 	buttons[1].is_hovered = 0;
-	buttons[1].function = start_analysis;
 	buttons[1].text = IMG_LoadTexture(renderer, "ui/assets/start_analysis.png");
 	if (!buttons[1].text)
 	{
@@ -164,7 +162,15 @@ int main(int argc, char *argv[])
             }
 
             update_slider(&slider, &event);
-			update_buttons(buttons, nb_buttons, &event);
+			int btn_index = update_buttons(buttons, nb_buttons, &event);
+			if (btn_index == 0) // save image
+			{
+				save_image();
+			}
+			else if (btn_index == 1)
+			{
+				start_analysis();
+			}
 		}
 
 		// RENDERING

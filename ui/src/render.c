@@ -198,10 +198,11 @@ void update_buttons_pos(Button *buttons, SDL_Rect panel)
     buttons[1].rect.y = panel.y + panel.h * 3/4 - btn_h / 2;
 }
 
-void update_buttons(Button *buttons, int nb_btns, SDL_Event *event)
+int update_buttons(Button *buttons, int nb_btns, SDL_Event *event)
 {
-    // Updates each button in the array buttons and executes their associated
-    // functions if necessary.
+    // Updates each button in the array buttons.
+    // If a button is clicked, returns its index to call its associated
+    // function in main. Otherwise, returns -1.
 
     for (int i = 0; i < nb_btns; i++)
     {
@@ -225,12 +226,10 @@ void update_buttons(Button *buttons, int nb_btns, SDL_Event *event)
         else if (event->type == SDL_MOUSEBUTTONUP &&
                  event->button.button == SDL_BUTTON_LEFT)
         {
-            if (b->is_hovered && b->is_active)
-            {
-                b->function();
-            }
+            if (b->is_hovered && b->is_active) return i;
         }
     }
+    return -1;
 }
 
 void display_buttons(SDL_Renderer *renderer, Button *buttons, int nb_btns)
