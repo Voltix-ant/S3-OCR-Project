@@ -5,6 +5,8 @@ steps/
 # neural network saves:
 neural_network/saves/*.txt
 
+# solver tests:
+solver_tests
 
 # Prerequisites
 *.d
