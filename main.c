@@ -196,6 +196,7 @@ int main(int argc, char *argv[])
                 NULL,
                 SDL_FLIP_NONE
                 );
+		display_preview_grid(renderer, preview);
         SDL_RenderSetClipRect(renderer, NULL);
 
 		SDL_RenderPresent(renderer);

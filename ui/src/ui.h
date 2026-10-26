@@ -29,6 +29,7 @@ SDL_Rect create_panel_rect(int win_w, int win_h);
 SDL_Rect create_preview_rect(int win_w, int win_h);
 void display_panel(SDL_Renderer *renderer, SDL_Rect panel);
 void display_preview(SDL_Renderer *renderer, SDL_Rect preview);
+void display_preview_grid(SDL_Renderer *renderer, SDL_Rect preview);
 SDL_Rect get_fitted_rect(SDL_Rect preview, int img_w, int img_h);
 
 RotationDevice create_rotation_device(SDL_Rect panel);

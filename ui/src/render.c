@@ -127,6 +127,19 @@ void display_preview(SDL_Renderer *renderer, SDL_Rect preview)
     SDL_RenderFillRect(renderer, &preview);
 }
 
+void display_preview_grid(SDL_Renderer *renderer, SDL_Rect preview)
+{
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    int x1 = preview.x + preview.w / 3;
+    int x2 = preview.x + preview.w * 2/3;
+    int y1 = preview.y + preview.h / 3;
+    int y2 = preview.y + preview.h * 2/3;
+    SDL_RenderDrawLine(renderer, x1, preview.y, x1, preview.y + preview.h);
+    SDL_RenderDrawLine(renderer, x2, preview.y, x2, preview.y + preview.h);
+    SDL_RenderDrawLine(renderer, preview.x, y1, preview.x + preview.w, y1);
+    SDL_RenderDrawLine(renderer, preview.x, y2, preview.x + preview.w, y2);
+}
+
 void display_slider(SDL_Renderer *renderer, RotationDevice slider)
 {
     // Displays the cursor and its axis in the panel.
