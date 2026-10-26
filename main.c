@@ -1,16 +1,19 @@
 #include "ui/src/ui.h"
 #include "pretreatment/src/pretreatment.h"
 
+// TO REMOVE -------------------------------------------------------------------
+// The following functions are only here to test the interface's buttons and
+// are meant to be replaced by each actual associated function in the future.
+void start_analysis(void) {printf("DEBUG: Starting analysis...\n");}
+void save_image(void) {printf("DEBUG: Image saved.\n");}
+// -----------------------------------------------------------------------------
+
+
 int main(int argc, char *argv[])
 {
-	if (argc < 2)
+	if (argc < 2 || argc > 2)
 	{
-			printf("Error: not enough arguments\n");
-			return 1;
-	}
-	if (argc > 2)
-	{
-			printf("Error: too many arguments\n");
+			printf("Usage: ./ocr [filepath]\n");
 			return 1;
 	}
 
@@ -33,8 +36,9 @@ int main(int argc, char *argv[])
 	SDL_Surface *img = IMG_Load(argv[1]);
 	if (!img)
 	{
-			printf("Error: failed to load image\n");
+			printf("Error: failed to load image: %s\n", IMG_GetError());
     		terminate(window, renderer);
+			IMG_Quit();
 			return 1;
 	}
 
@@ -47,8 +51,9 @@ int main(int argc, char *argv[])
 
 	if (!og_img)
 	{
-			printf("Error: failed image conversion\n");
+			printf("Error: failed image conversion: %s\n", SDL_GetError());
     		terminate(window, renderer);
+			IMG_Quit();
 			return 1;
 	}
 
@@ -63,12 +68,45 @@ int main(int argc, char *argv[])
 	{
 			printf("Error: couldn't create image texture\n");
     		terminate(window, renderer);
+			IMG_Quit();
 			return 1;
 	}
 
     // Retrieving image dimensions
     int img_w, img_h;
     SDL_QueryTexture(og_tex, NULL, NULL, &img_w, &img_h);
+
+	// Creating all the interface's buttons
+	int nb_buttons = 2;
+	Button buttons[nb_buttons];
+	// "Save image" button
+	buttons[0].is_active = 0; // Saving an image can only be done after analysis
+	buttons[0].is_hovered = 0;
+	buttons[0].function = save_image;
+	buttons[0].text = IMG_LoadTexture(renderer, "ui/assets/save_image.png");
+	if (!buttons[0].text)
+	{
+		printf("Error loading button texture: %s\n", IMG_GetError());
+		SDL_DestroyTexture(og_tex);
+		terminate(window, renderer);
+		IMG_Quit();
+		return 1;
+	}
+	// "Start analysis" button
+	buttons[1].is_active = 1;
+	buttons[1].is_hovered = 0;
+	buttons[1].function = start_analysis;
+	buttons[1].text = IMG_LoadTexture(renderer, "ui/assets/start_analysis.png");
+	if (!buttons[1].text)
+	{
+		printf("Error loading button texture: %s\n", IMG_GetError());
+		SDL_DestroyTexture(buttons[0].text);
+		SDL_DestroyTexture(og_tex);
+		terminate(window, renderer);
+		IMG_Quit();
+		return 1;
+	}
+	update_buttons_pos(buttons, panel); // initialize button positions
 
 	// MAIN LOOP
 	int running = 1;
@@ -91,17 +129,18 @@ int main(int argc, char *argv[])
 
                 // Update the slider's position 
                 slider.axis.x = panel.x + panel.w / 10;
-                slider.axis.y = panel.y + panel.h / 20;
+                slider.axis.y = panel.y + panel.h / 4;
                 slider.axis.w = panel.w * 8 / 10;
 
                 int mx = slider.axis.x + slider.axis.w*(slider.angle+180)/360;
                 slider.cursor.x = mx - slider.cursor.w / 2;
                 slider.cursor.y = slider.axis.y - 14;
 
-                // Update the buttons' positions (TODO)
+				update_buttons_pos(buttons, panel);
             }
 
             update_slider(&slider, &event);
+			update_buttons(buttons, nb_buttons, &event);
 		}
 
 		// RENDERING
@@ -117,6 +156,7 @@ int main(int argc, char *argv[])
         display_preview(renderer, preview);
 
         // Display buttons and slider
+		display_buttons(renderer, buttons, nb_buttons);
         display_slider(renderer, slider);
 
 		// Display of the preview image
