@@ -5,6 +5,7 @@
 #include <math.h>
 #include <time.h>
 #include "dataset.h"
+#include "neural_save.h"
 
 double xavier_uniform(int n_in, int n_out) {
 	double limit = sqrt(6.0 / (n_in + n_out));
@@ -27,6 +28,7 @@ NeuralNetwork *neural_network_create(size_t input_size, size_t hidden_size, size
 
 	neural_network->hidden_weights = calloc(hidden_size*input_size, sizeof(double));
 	if (!neural_network->hidden_weights) {
+		free(neural_network);
 		return NULL;
 	}
 	for (size_t i = 0; i < hidden_size*input_size; i++) {
