@@ -4,13 +4,6 @@
 #include "analysis/src/analysis.h"
 #include "analysis/src/debug_draw.h"
 
-// TO REMOVE -------------------------------------------------------------------
-// The following functions are only here to test the interface's buttons and
-// are meant to be replaced by each actual associated function in the future.
-void start_analysis(void) {printf("DEBUG: Starting analysis...\n");}
-void save_image(void) {printf("DEBUG: Image saved.\n");}
-// -----------------------------------------------------------------------------
-
 
 int main(int argc, char *argv[])
 {
@@ -139,9 +132,18 @@ int main(int argc, char *argv[])
                 slider.cursor.y = slider.axis.y - 14;
 
 				update_buttons_pos(buttons, panel);
-            } else if (event.type == SDL_KEYDOWN && 
-                    event.key.keysym.sym == SDLK_RETURN) {
-                // Rotate the surface
+            }
+
+			// Update slider and buttons
+            update_slider(&slider, &event);
+			int btn_index = update_buttons(buttons, nb_buttons, &event);
+			if (btn_index == 0) // SAVE IMAGE
+			{
+				printf("DEBUG: \"Save image\" button clicked.\n"); // TO REPLACE
+			}
+			else if (btn_index == 1) // START ANALYSIS
+			{
+				// Rotate the surface
                 SDL_Surface *rot = rotate_surface(og_img, slider.angle);
                 // Translate it to a matrix
                 struct matrix *mat = surface_to_matrix(rot);
@@ -159,17 +161,6 @@ int main(int argc, char *argv[])
                 analysis_destroy(a);
                 destroy_matrix(mat);
                 SDL_FreeSurface(rot);
-            }
-
-            update_slider(&slider, &event);
-			int btn_index = update_buttons(buttons, nb_buttons, &event);
-			if (btn_index == 0) // save image
-			{
-				save_image();
-			}
-			else if (btn_index == 1)
-			{
-				start_analysis();
 			}
 		}
 
