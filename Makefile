@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I. -Icommon/src -Ianalysis/src -Ineural-network/src -Wall -Wextra \
+CFLAGS = -I. -Icommon/src -Ianalysis/src -Ineural_network/src -Wall -Wextra \
 		 -fsanitize=address -g
 LIBFLAGS = $(shell sdl2-config --cflags --libs) -lSDL2_image -lm
 
