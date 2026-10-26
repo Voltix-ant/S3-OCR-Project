@@ -107,7 +107,7 @@ void update_slider(RotationDevice *slider, SDL_Event *event)
         slider->cursor.x = mx - slider->cursor.w / 2;
 
         // updating slider's angle
-        slider->angle = 360 * (mx - slider->axis.x) / slider->axis.w - 180;
+        slider->angle = 360.0 * (mx - slider->axis.x) / slider->axis.w - 180.0;
     }
 }
 

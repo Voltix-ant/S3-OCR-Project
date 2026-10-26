@@ -18,7 +18,7 @@ typedef struct {
     SDL_Rect cursor;
     SDL_Rect axis; // the cursor's axis
     int is_dragging; // 1 if user is dragging the cursor
-    int angle;
+    double angle;
 } RotationDevice;
 
 

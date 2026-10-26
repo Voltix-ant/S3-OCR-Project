@@ -134,7 +134,9 @@ int main(int argc, char *argv[])
                 slider.axis.y = panel.y + panel.h / 4;
                 slider.axis.w = panel.w * 8 / 10;
 
-                int mx = slider.axis.x + slider.axis.w*(slider.angle+180)/360;
+                int mx = slider.axis.x + (
+					(int)slider.axis.w*(slider.angle+180)/360
+				);
                 slider.cursor.x = mx - slider.cursor.w / 2;
                 slider.cursor.y = slider.axis.y - 14;
 
