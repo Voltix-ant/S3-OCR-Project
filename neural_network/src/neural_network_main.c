@@ -47,12 +47,21 @@ int main(void) {
 	printf("Starting the training\n");
 
 	neural_network_train(network, &dataset, 2000, 0.1);
-
+	
+	// to save the training
+	/*
 	int res = neural_network_save(network, SAVE_PATH);
 	if (res == -1) {
 		printf("error while saving\n");
 	} else {
 		printf("settings saved at : %s\n", SAVE_PATH);
+	}
+	*/
+
+	// to load the training
+	NeuralNetwork *network2 = neural_network_load(SAVE_PATH);
+	if (network2 == NULL) {
+		printf("Error while loading the network from : %s\n", SAVE_PATH);
 	}
 
 
@@ -70,5 +79,26 @@ int main(void) {
 
 	neural_network_predict(network, input_3, output);
 	printf("%.1f xor %.1f = %d \n", input_3[0], input_3[1], translate_output_to_xor(output));
+	
+	if (network2) {
+		printf("\nPrediction after loading:\n");
+		neural_network_predict(network2, input_0, output);
+		printf("%.1f xor %.1f = %d\n", input_0[0], input_0[1], translate_output_to_xor(output));
+
+		neural_network_predict(network2, input_1, output);
+		printf("%.1f xor %.1f = %d\n", input_1[0], input_1[1], translate_output_to_xor(output));
+
+		neural_network_predict(network2, input_2, output);
+		printf("%.1f xor %.1f = %d\n", input_2[0], input_2[1], translate_output_to_xor(output));
+
+		neural_network_predict(network2, input_3, output);
+		printf("%.1f xor %.1f = %d \n", input_3[0], input_3[1], translate_output_to_xor(output));
+		
+		printf("\nRaw Comparison\n");
+		printf("Network 1: %.17f %.17f\n", network->output[0], network->output[1]);
+		printf("Network 2: %.17f %.17f\n", network2->output[0], network2->output[1]);
+		neural_network_destroy(network2);
+	}
 	neural_network_destroy(network);
 }
+

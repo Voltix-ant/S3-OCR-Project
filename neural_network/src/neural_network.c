@@ -28,6 +28,7 @@ NeuralNetwork *neural_network_create(size_t input_size, size_t hidden_size, size
 
 	neural_network->hidden_weights = calloc(hidden_size*input_size, sizeof(double));
 	if (!neural_network->hidden_weights) {
+		free(neural_network);
 		return NULL;
 	}
 	for (size_t i = 0; i < hidden_size*input_size; i++) {

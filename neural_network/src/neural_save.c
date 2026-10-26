@@ -23,9 +23,17 @@ static int write_array(FILE *f, const double *array, size_t n, size_t per_line) 
 
 
 static int read_array(FILE *f, double *array, size_t n) {
-	(void)f;
-	(void)array;
-	(void)n;
+	if (f == NULL || array == NULL) {
+		return -1;
+	}
+	int res;
+	for (size_t i = 0; i < n; i++) {
+		res = fscanf(f, "%lf", &array[i]);
+		if (res != 1) {
+			return -1;
+		}
+	}
+	return 0;
 }
 
 int neural_network_save(const NeuralNetwork *network, const char *path) {
@@ -81,5 +89,69 @@ int neural_network_save(const NeuralNetwork *network, const char *path) {
 }
 
 NeuralNetwork *neural_network_load(const char *path) {
-	(void)path;
+	// verification of the file
+	if (path == NULL) {
+		return NULL;
+	}
+	FILE *file = fopen(path, "r");
+	if (file == NULL) {
+		return NULL;
+	}
+	int version;
+	int res = fscanf(file, "NN %d", &version);
+	if (res != 1 || version != 1) {
+		fclose(file);
+		return NULL;
+	}
+	
+	// reading the sizes and creating the network
+	size_t input_size;
+	size_t hidden_size;
+	size_t output_size;
+
+	res = fscanf(file, "%zu %zu %zu", &input_size, &hidden_size, &output_size);
+	if (res != 3) {
+		fclose(file);
+		return NULL;
+	}
+
+	NeuralNetwork *network = neural_network_create(input_size, hidden_size, output_size);
+	if (network == NULL) {
+		fclose(file);
+		return NULL;
+	}
+
+	// we can read the data and load the settings
+	// hidden weights
+	res = read_array(file, network->hidden_weights, input_size*hidden_size);
+	if (res == -1) {
+		neural_network_destroy(network);
+		fclose(file);
+		return NULL;
+	}
+	// hidden bias
+	res = read_array(file, network->hidden_bias, hidden_size);
+	if (res == -1) {
+		neural_network_destroy(network);
+		fclose(file);
+		return NULL;
+	}
+	// output weights
+	res = read_array(file, network->output_weights, hidden_size*output_size);
+	if (res == -1) {
+		neural_network_destroy(network);
+		fclose(file);
+		return NULL;
+	}
+	
+	// output bias
+	res = read_array(file, network->output_bias, output_size);
+	if (res == -1) {
+		neural_network_destroy(network);
+		fclose(file);
+		return NULL;
+	}
+
+	fclose(file);
+	return network;
 }
