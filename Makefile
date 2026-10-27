@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I. -Icommon/src -Ianalysis/src -Ineural_network/src -Isolver/src \
+CFLAGS = -I. -Icommon/src -Ianalysis/src -Ineural_network/src -Igrid_solver/src \
 	-Wall -Wextra -fsanitize=address -g
 LIBFLAGS = $(shell sdl2-config --cflags --libs) -lSDL2_image -lm
 
@@ -21,8 +21,8 @@ NEURAL_NETWORK_SRC  = \
 NEURAL_NETWORK_OBJ  = $(NEURAL_NETWORK_MAIN:.c=.o) $(NEURAL_NETWORK_SRC:.c=.o)
 
 # Solver files :
-SOLVER_MAIN = solver/src/solver_main.c
-SOLVER_SRC= $(filter-out $(SOLVER_MAIN),$(wildcard solver/src/*.c))
+SOLVER_MAIN = grid_solver/src/solver_main.c
+SOLVER_SRC= $(filter-out $(SOLVER_MAIN),$(wildcard grid_solver/src/*.c))
 SOLVER_OBJ = $(SOLVER_MAIN:.c=.o) $(SOLVER_SRC:.c=.o)
 
 # UI files :
@@ -52,9 +52,9 @@ neuralnetwork: $(COMMON_OBJ) $(NEURAL_NETWORK_OBJ)
 	$(CC) $^ -o neural_network_test $(CFLAGS) $(LIBFLAGS)
 
 solver: $(COMMON_OBJ) $(SOLVER_OBJ)
-	$(CC) $^ -o solver_test $(CFLAGS) $(LIBFLAGS)
+	$(CC) $^ -o solver $(CFLAGS) $(LIBFLAGS)
 
-solver_tests: $(SOLVER_SRC:.c=.o) solver/tests/test_solver.o
+solver_tests: $(SOLVER_SRC:.c=.o) grid_solver/tests/test_solver.o
 	$(CC) $^ -o solver_tests $(CFLAGS)
 
 %.o: %.c
@@ -67,11 +67,11 @@ clean:
 	# neural network :
 	$(RM) $(NEURAL_NETWORK_OBJ) neural_network_test
 	# solver :
-	$(RM) $(SOLVER_OBJ) solver_test
-	$(RM) solver/tests/test_solver.o solver_tests
+	$(RM) $(SOLVER_OBJ) solver
+	$(RM) grid_solver/tests/test_solver.o solver_tests
 	# ui :
 	$(RM) $(UI_OBJ)
 	# pretreatment
 	$(RM) $(PRETREATMENT_OBJ)
 
-.PHONY: all analysis neuralnetwork solver clean
+.PHONY: all analysis neuralnetwork clean
