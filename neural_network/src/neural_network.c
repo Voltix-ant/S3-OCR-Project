@@ -232,7 +232,7 @@ void neural_network_predict(NeuralNetwork *network, const double *input, double 
 	}
 }
 
-int translate_output_to_xor(double *output) {
+int translate_output_to_xnor(double *output) {
 	if (output[0] >= 0.5) {
 		return 0;
 	} else {
