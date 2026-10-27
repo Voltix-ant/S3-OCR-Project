@@ -7,7 +7,6 @@ neural_network/saves/*.txt
 
 # solver:
 /solver
-solver_tests
 
 # Prerequisites
 *.d
