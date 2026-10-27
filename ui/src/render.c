@@ -43,7 +43,7 @@ RotationDevice create_rotation_device(SDL_Rect panel)
     // cursor's axis
     SDL_Rect axis = {
         .x = panel.x + panel.w / 10,
-        .y = panel.y + panel.h / 20,
+        .y = panel.y + panel.h / 4,
         .w = panel.w * 8 / 10,
         .h = 4
     };
@@ -107,7 +107,7 @@ void update_slider(RotationDevice *slider, SDL_Event *event)
         slider->cursor.x = mx - slider->cursor.w / 2;
 
         // updating slider's angle
-        slider->angle = 360 * (mx - slider->axis.x) / slider->axis.w - 180;
+        slider->angle = 360.0 * (mx - slider->axis.x) / slider->axis.w - 180.0;
     }
 }
 
@@ -125,6 +125,19 @@ void display_preview(SDL_Renderer *renderer, SDL_Rect preview)
 
     SDL_SetRenderDrawColor(renderer, 60, 60, 70, 255);
     SDL_RenderFillRect(renderer, &preview);
+}
+
+void display_preview_grid(SDL_Renderer *renderer, SDL_Rect preview)
+{
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    int x1 = preview.x + preview.w / 3;
+    int x2 = preview.x + preview.w * 2/3;
+    int y1 = preview.y + preview.h / 3;
+    int y2 = preview.y + preview.h * 2/3;
+    SDL_RenderDrawLine(renderer, x1, preview.y, x1, preview.y + preview.h);
+    SDL_RenderDrawLine(renderer, x2, preview.y, x2, preview.y + preview.h);
+    SDL_RenderDrawLine(renderer, preview.x, y1, preview.x + preview.w, y1);
+    SDL_RenderDrawLine(renderer, preview.x, y2, preview.x + preview.w, y2);
 }
 
 void display_slider(SDL_Renderer *renderer, RotationDevice slider)
@@ -164,3 +177,95 @@ SDL_Rect get_fitted_rect(SDL_Rect preview, int img_w, int img_h)
     return fitted;
 }
 
+void update_buttons_pos(Button *buttons, SDL_Rect panel)
+{
+    // Updates the buttons' positions and shapes when the window gets resized.
+
+    int btn_w = panel.w * 8 / 10;
+    int btn_h = panel.h * 8 / 100;
+    int btn_x = panel.x + (panel.w - btn_w) / 2;
+
+    // "Save image" button
+    buttons[0].rect.w = btn_w;
+    buttons[0].rect.h = btn_h;
+    buttons[0].rect.x = btn_x;
+    buttons[0].rect.y = panel.y + panel.h / 2 - btn_h / 2;
+
+    // "Start analysis" button
+    buttons[1].rect.w = btn_w;
+    buttons[1].rect.h = btn_h;
+    buttons[1].rect.x = btn_x;
+    buttons[1].rect.y = panel.y + panel.h * 3/4 - btn_h / 2;
+}
+
+int update_buttons(Button *buttons, int nb_btns, SDL_Event *event)
+{
+    // Updates each button in the array buttons.
+    // If a button is clicked, returns its index to call its associated
+    // function in main. Otherwise, returns -1.
+
+    for (int i = 0; i < nb_btns; i++)
+    {
+        Button *b = &buttons[i];
+        
+        if (event->type == SDL_MOUSEMOTION)
+        {
+            int mx = event->motion.x;
+            int my = event->motion.y;
+
+            if (b->rect.x <= mx && mx <= b->rect.x + b->rect.w &&
+                b->rect.y <= my && my <= b->rect.y + b->rect.h)
+            {
+                b->is_hovered = 1;
+            }
+            else
+            {
+                b->is_hovered = 0;
+            }
+        }
+        else if (event->type == SDL_MOUSEBUTTONUP &&
+                 event->button.button == SDL_BUTTON_LEFT)
+        {
+            if (b->is_hovered && b->is_active) return i;
+        }
+    }
+    return -1;
+}
+
+void display_buttons(SDL_Renderer *renderer, Button *buttons, int nb_btns)
+{
+    // Displays every button according to their shape and current position.
+    // Also displays their associated text, if any.
+
+    for (int i = 0; i < nb_btns; i++)
+    {
+        if (!buttons[i].is_active)
+        {
+            SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+        }
+        else if (!buttons[i].is_hovered)
+        {
+            SDL_SetRenderDrawColor(renderer, 130, 160, 130, 255);
+        }
+        else SDL_SetRenderDrawColor(renderer, 155, 185, 155, 255);
+
+        SDL_RenderFillRect(renderer, &buttons[i].rect);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderDrawRect(renderer, &buttons[i].rect);
+
+        if (buttons[i].text != NULL)
+        {
+            int tex_w, tex_h;
+            SDL_QueryTexture(buttons[i].text, NULL, NULL, &tex_w, &tex_h);
+            int l = buttons[i].rect.w * 1 / 10;
+            SDL_Rect adapted_rect = { // add a limit to make the text cleaner
+                .x = buttons[i].rect.x + l,
+                .y = buttons[i].rect.y,
+                .w = buttons[i].rect.w - 2*l,
+                .h = buttons[i].rect.h
+            };
+            SDL_Rect text_rect = get_fitted_rect(adapted_rect, tex_w, tex_h);
+            SDL_RenderCopy(renderer, buttons[i].text, NULL, &text_rect);
+        }
+    }
+}
