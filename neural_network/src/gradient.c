@@ -7,10 +7,7 @@ Gradient *gradient_create(const NeuralNetwork *network) {
                 return NULL;
         }
 
-        if (!gradient) {
-                return NULL;
-        }
-        gradient->hidden_weights = calloc(network->hidden_size * network->input_size, sizeof(double));
+	gradient->hidden_weights = calloc(network->hidden_size * network->input_size, sizeof(double));
         if (!gradient->hidden_weights) {
                 free(gradient);
                 return NULL;
