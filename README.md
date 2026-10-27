@@ -90,3 +90,38 @@ and `-1` on error.
 - **Warnings.** If a row of the grid does not have the same number of letters as
   the others, a warning is printed. It usually means a letter was missed or split
   in two.
+
+## Neural network module
+
+A multilayer perceptron with one hidden layer (sigmoid), a softmax output and
+a cross-entropy loss, trained by stochastic gradient descent. Layer sizes are
+parameters: the proof of concept uses 2 → 4 → 2, the letter recognizer will
+use 784 → n → 26 (28x28 images from the analysis module).
+
+### Proof of concept (XNOR)
+
+```sh
+make neuralnetwork
+./neural_network_test   # run from the repository root
+```
+
+The program trains the network on the function not(A).not(B) + A.B for 2000
+epochs, saves it to `neural_network/saves/xnor.txt`, reloads it and checks
+that both networks give the same outputs.
+
+### Usage
+
+| Function | Description |
+|---|---|
+| `neural_network_create(in, hidden, out)` | New network with Xavier-initialized weights, or `NULL` |
+| `neural_network_train(net, dataset, epochs, rate)` | Trains on a `Dataset` of one-hot examples |
+| `neural_network_predict(net, input, output)` | Writes the output probabilities into `output` |
+| `neural_network_save(net, path)` | Saves the network to a text file, returns `0` or `-1` |
+| `neural_network_load(path)` | Loads a saved network, or `NULL` if the file is invalid |
+| `neural_network_destroy(net)` | Frees the network |
+
+### Save file format
+
+Text file: a version header `NN 1`, the three layer sizes, then the hidden
+weights, hidden biases, output weights and output biases, written with 17
+significant digits so that reloading is exact.
