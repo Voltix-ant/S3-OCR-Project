@@ -110,7 +110,7 @@ int adaptive_threshold(SDL_Surface *surface)
 
     // Adaptive threshold application
     int half_zone = w / 32;
-    float t = (float)0.15;
+    float t = (float)0.10;
     Uint32 white = SDL_MapRGB(surface->format, 255, 255, 255);
     Uint32 black = SDL_MapRGB(surface->format, 0, 0, 0);
 
