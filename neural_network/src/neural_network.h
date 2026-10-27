@@ -32,6 +32,6 @@ Gradient *neural_network_backward(NeuralNetwork *network, const double *input, c
 void neural_network_train(NeuralNetwork *network, Dataset *dataset, size_t epochs, double learning_rate);
 
 void neural_network_predict(NeuralNetwork *network, const double *input, double *output);
-int translate_output_to_xor(double *output);
+int translate_output_to_xnor(double *output);
 
 #endif
