@@ -38,12 +38,14 @@ NeuralNetwork *neural_network_create(size_t input_size, size_t hidden_size, size
 	neural_network->hidden_bias = calloc(hidden_size, sizeof(double));
 	if (!neural_network->hidden_bias) {
 		free(neural_network->hidden_weights);
+		free(neural_network);
 		return NULL;
 	}
 	neural_network->output_weights = calloc(hidden_size*output_size, sizeof(double));	
 	if (!neural_network->output_weights) {
 		free(neural_network->hidden_weights);
 		free(neural_network->hidden_bias);
+		free(neural_network);
 		return NULL;
 	}
 	for (size_t i = 0; i < hidden_size*output_size; i++) {
@@ -55,6 +57,7 @@ NeuralNetwork *neural_network_create(size_t input_size, size_t hidden_size, size
 		free(neural_network->hidden_weights);
 		free(neural_network->hidden_bias);
 		free(neural_network->output_weights);
+		free(neural_network);
 		return NULL;
 	}
 	neural_network->hidden = calloc(hidden_size, sizeof(double));
@@ -63,6 +66,7 @@ NeuralNetwork *neural_network_create(size_t input_size, size_t hidden_size, size
 		free(neural_network->hidden_bias);
 		free(neural_network->output_weights);
 		free(neural_network->output_bias);
+		free(neural_network);
 		return NULL;
 	}
 	neural_network->output = calloc(output_size, sizeof(double));
@@ -72,6 +76,7 @@ NeuralNetwork *neural_network_create(size_t input_size, size_t hidden_size, size
 		free(neural_network->output_weights);
 		free(neural_network->output_bias);
 		free(neural_network->hidden);
+		free(neural_network);
 		return NULL;
 	}
 	
