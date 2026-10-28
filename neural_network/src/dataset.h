@@ -1,6 +1,8 @@
 #ifndef DATASET_H
 #define DATASET_H
 
+#include <stddef.h>
+
 /* One training example: an input vector and its expected one-hot output. */
 typedef struct
 {
