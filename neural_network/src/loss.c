@@ -1,7 +1,8 @@
 #include "loss.h"
 #include <math.h>
 
-double cross_entropy(const double *expected, const double *predicted, size_t size) {
+double cross_entropy(const double *expected, const double *predicted,
+		     size_t size) {
 	double loss = 0.0;
 	const double epsilon = 1e-15;
 
