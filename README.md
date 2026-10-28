@@ -125,3 +125,18 @@ that both networks give the same outputs.
 Text file: a version header `NN 1`, the three layer sizes, then the hidden
 weights, hidden biases, output weights and output biases, written with 17
 significant digits so that reloading is exact.
+
+## Solver
+
+### Build :
+```
+make solver
+```
+
+### Usage
+```
+./solver <grid_file> <word>
+```
+The grid file contains one row of letters per line, all rows of the same
+length. The program prints the position of the first and last letters of
+the word, `(x0,y0)(x1,y1)`, or `Not found`.
