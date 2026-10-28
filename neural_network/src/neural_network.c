@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-double xavier_uniform(int n_in, int n_out) {
+/* Random weight in [-sqrt(6 / (n_in + n_out)), +sqrt(6 / (n_in + n_out))]. */
+static double xavier_uniform(int n_in, int n_out) {
 	double limit = sqrt(6.0 / (n_in + n_out));
 
 	double u = (double)rand() / (double)RAND_MAX;
@@ -129,7 +130,7 @@ void neural_network_forward(NeuralNetwork *network, const double *input) {
 			sum += weight * network->hidden[i];
 		}
 
-		network->output[k] = sum; // we will do the softmax then
+		network->output[k] = sum;
 	}
 
 	softmax(network->output, network->output, network->output_size);

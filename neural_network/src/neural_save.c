@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/*
+ * Writes the `n` values of `array` to `f` with 17 significant digits,
+ * `per_line` values per line. Returns 0 on success, -1 on error.
+ */
 static int write_array(FILE *f, const double *array, size_t n,
 		       size_t per_line) {
 	if (f == NULL || per_line == 0) {
@@ -22,6 +26,10 @@ static int write_array(FILE *f, const double *array, size_t n,
 	return 0;
 }
 
+/*
+ * Reads `n` values from `f` into `array`.
+ * Returns 0 on success, -1 if a value is missing or invalid.
+ */
 static int read_array(FILE *f, double *array, size_t n) {
 	if (f == NULL || array == NULL) {
 		return -1;
