@@ -37,7 +37,7 @@ int main(void) {
 
 	NeuralNetwork *network =
 	    neural_network_create(input_size, hidden_size, output_size);
-
+	
 	if (!network) {
 		printf("Error creating the network");
 		return EXIT_FAILURE;
@@ -107,4 +107,58 @@ int main(void) {
 		neural_network_destroy(network2);
 	}
 	neural_network_destroy(network);
+
+	
+	// creating 5 more networks to prove the neural network works
+	network2 =
+	    neural_network_create(input_size, hidden_size, output_size);
+	if (!network) {
+
+		printf("Error creating the network");
+		return EXIT_FAILURE;
+	}
+	NeuralNetwork *network3 =
+	    neural_network_create(input_size, hidden_size, output_size);
+	if (!network3) {
+		printf("Error creating the network");
+		neural_network_destroy(network2);
+		return EXIT_FAILURE;
+	}
+	NeuralNetwork *network4 =
+	    neural_network_create(input_size, hidden_size, output_size);
+	if (!network4) {
+		printf("Error creating the network");
+		neural_network_destroy(network2);
+		neural_network_destroy(network3);
+		return EXIT_FAILURE;
+	}
+	NeuralNetwork *network5 =
+	    neural_network_create(input_size, hidden_size, output_size);
+	if (!network5) {
+		printf("Error creating the network");
+		neural_network_destroy(network2);
+		neural_network_destroy(network3);
+		neural_network_destroy(network4);
+		return EXIT_FAILURE;
+	}
+	NeuralNetwork *network6 =
+	    neural_network_create(input_size, hidden_size, output_size);
+	if (!network6) {
+		printf("Error creating the network");
+		neural_network_destroy(network2);
+		neural_network_destroy(network3);
+		neural_network_destroy(network4);
+		neural_network_destroy(network5);
+		return EXIT_FAILURE;
+	}
+	
+	// training all the networks
+	
+
+	// releasing all the network allocated
+	neural_network_destroy(network2);
+	neural_network_destroy(network3);
+	neural_network_destroy(network4);
+	neural_network_destroy(network5);
+	neural_network_destroy(network6);
 }
