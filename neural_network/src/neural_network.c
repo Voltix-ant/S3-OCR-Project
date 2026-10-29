@@ -252,8 +252,12 @@ void neural_network_train(NeuralNetwork *network, Dataset *dataset,
 
 			gradient_destroy(gradient);
 		}
-		printf("Epoch %zu/%zu - loss: %.6f\n", epoch + 1, epochs,
-		       total_loss / (double)dataset->size);
+		if ((epoch % (epochs/4)) == 0 || epoch == epochs-1) {
+			printf("Epoch %zu/%zu - loss: %.6f\n", 
+					epoch + 1, epochs,
+		       	total_loss / (double)dataset->size);
+	
+		}
 	}
 }
 
