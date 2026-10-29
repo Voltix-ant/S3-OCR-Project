@@ -4,172 +4,127 @@
 #include <stdlib.h>
 
 #define SAVE_PATH "neural_network/saves/xnor.txt"
+#define NB_EXAMPLES 4
+#define NB_EXTRA_NETWORKS 7
+#define EPOCHS 2000
+#define LEARNING_RATE 0.1
 
-int main(void) {
-	srand(42);
+static double input_0[] = {1.0, 0.0};
+static double input_1[] = {0.0, 0.0};
+static double input_2[] = {0.0, 1.0};
+static double input_3[] = {1.0, 1.0};
 
-	const size_t input_size = 2;
-	const size_t hidden_size = 4;
-	const size_t output_size = 2;
+static double expected_0[] = {1.0, 0.0};
+static double expected_1[] = {0.0, 1.0};
+static double expected_2[] = {1.0, 0.0};
+static double expected_3[] = {0.0, 1.0};
 
-	double input_0[] = {1.0, 0.0};
-	double input_1[] = {0.0, 0.0};
-	double input_2[] = {0.0, 1.0};
-	double input_3[] = {1.0, 1.0};
+static double *inputs[NB_EXAMPLES] = {input_0, input_1, input_2, input_3};
+static const int xnor_results[NB_EXAMPLES] = {0, 1, 0, 1};
 
-	double expected_0[] = {1.0, 0.0};
-	double expected_1[] = {0.0, 1.0};
-	double expected_2[] = {1.0, 0.0};
-	double expected_3[] = {0.0, 1.0};
+static void print_predictions(NeuralNetwork *network)
+{
+        double output[2] = {0.0, 0.0};
 
-	TrainingExample examples[] = {
-	    {input_0, expected_0},
-	    {input_1, expected_1},
-	    {input_2, expected_2},
-	    {input_3, expected_3},
+        for (size_t i = 0; i < NB_EXAMPLES; i++) {
+                neural_network_predict(network, inputs[i], output);
+                printf("%.1f == %.1f = %d\n", inputs[i][0], inputs[i][1],
+                       translate_output_to_xnor(output));
+        }
+}
 
-	};
+static int count_correct(NeuralNetwork *network)
+{
+        double output[2] = {0.0, 0.0};
+        int correct = 0;
 
-	Dataset dataset = {.examples = examples,
-			   .size = 4,
-			   .input_size = input_size,
-			   .output_size = output_size};
+        for (size_t i = 0; i < NB_EXAMPLES; i++) {
+                neural_network_predict(network, inputs[i], output);
+                if (translate_output_to_xnor(output) == xnor_results[i])
+                        correct++;
+        }
+        return correct;
+}
 
-	NeuralNetwork *network =
-	    neural_network_create(input_size, hidden_size, output_size);
-	
-	if (!network) {
-		printf("Error creating the network");
-		return EXIT_FAILURE;
-	}
+int main(void)
+{
+        srand(42);
 
-	printf("Starting the training\n");
+        const size_t input_size = 2;
+        const size_t hidden_size = 4;
+        const size_t output_size = 2;
 
-	neural_network_train(network, &dataset, 2000, 0.1);
-	
-	// saving and loading the network ---------------------
-	int res = neural_network_save(network, SAVE_PATH);
-	if (res == -1) {
-		printf("error while saving\n");
-	} else {
-		printf("settings saved at : %s\n", SAVE_PATH);
-	}
+        TrainingExample examples[] = {
+            {input_0, expected_0},
+            {input_1, expected_1},
+            {input_2, expected_2},
+            {input_3, expected_3},
+        };
 
-	NeuralNetwork *network2 = neural_network_load(SAVE_PATH);
-	if (network2 == NULL) {
-		printf("Error while loading the network from : %s\n",
-		       SAVE_PATH);
-	}
-	// -----------------------------------------------------
-	
-	printf("\nPrediction after training:\n");
-	double output[2] = {0.0, 0.0};
+        Dataset dataset = {.examples = examples,
+                           .size = NB_EXAMPLES,
+                           .input_size = input_size,
+                           .output_size = output_size};
 
-	neural_network_predict(network, input_0, output);
-	printf("%.1f == %.1f = %d\n", input_0[0], input_0[1],
-	       translate_output_to_xnor(output));
+        NeuralNetwork *network =
+            neural_network_create(input_size, hidden_size, output_size);
+        if (!network) {
+                fprintf(stderr, "Error creating the network\n");
+                return EXIT_FAILURE;
+        }
 
-	neural_network_predict(network, input_1, output);
-	printf("%.1f == %.1f = %d\n", input_1[0], input_1[1],
-	       translate_output_to_xnor(output));
+        printf("Starting the training\n");
+        neural_network_train(network, &dataset, EPOCHS, LEARNING_RATE);
 
-	neural_network_predict(network, input_2, output);
-	printf("%.1f == %.1f = %d\n", input_2[0], input_2[1],
-	       translate_output_to_xnor(output));
+        // saving and loading the network
+        if (neural_network_save(network, SAVE_PATH) == -1)
+                fprintf(stderr, "Error while saving\n");
+        else
+                printf("Settings saved at: %s\n", SAVE_PATH);
 
-	neural_network_predict(network, input_3, output);
-	printf("%.1f == %.1f = %d\n", input_3[0], input_3[1],
-	       translate_output_to_xnor(output));
+        NeuralNetwork *loaded = neural_network_load(SAVE_PATH);
+        if (!loaded)
+                fprintf(stderr, "Error while loading the network from: %s\n",
+                        SAVE_PATH);
 
-	if (network2) {
-		printf("\nPrediction after loading %s:\n", SAVE_PATH);
-		neural_network_predict(network2, input_0, output);
-		printf("%.1f == %.1f = %d\n", input_0[0], input_0[1],
-		       translate_output_to_xnor(output));
+        printf("\nPrediction after training:\n");
+        print_predictions(network);
+        int successes = count_correct(network) == NB_EXAMPLES;
 
-		neural_network_predict(network2, input_1, output);
-		printf("%.1f == %.1f = %d\n", input_1[0], input_1[1],
-		       translate_output_to_xnor(output));
+        if (loaded) {
+                printf("\nPrediction after loading %s:\n", SAVE_PATH);
+                print_predictions(loaded);
 
-		neural_network_predict(network2, input_2, output);
-		printf("%.1f == %.1f = %d\n", input_2[0], input_2[1],
-		       translate_output_to_xnor(output));
+                // both networks last predicted input_3
+                printf("\nRaw comparison\n");
+                printf("Network 1: %.17f %.17f\n", network->output[0],
+                       network->output[1]);
+                printf("Network 2: %.17f %.17f\n", loaded->output[0],
+                       loaded->output[1]);
+                neural_network_destroy(loaded);
+        }
+        neural_network_destroy(network);
 
-		neural_network_predict(network2, input_3, output);
-		printf("%.1f == %.1f = %d\n", input_3[0], input_3[1],
-		       translate_output_to_xnor(output));
+        // training more networks with other random weights
+        printf("\nTraining %d other networks with random weights\n",
+               NB_EXTRA_NETWORKS);
+        for (int i = 0; i < NB_EXTRA_NETWORKS; i++) {
+                NeuralNetwork *extra = neural_network_create(input_size,
+                                                hidden_size, output_size);
+                if (!extra) {
+                        fprintf(stderr, "Error creating network %d\n", i + 2);
+                        return EXIT_FAILURE;
+                }
+                neural_network_train(extra, &dataset, EPOCHS, LEARNING_RATE);
+                int correct = count_correct(extra);
+                printf("Network %d: %d/%d correct\n", i + 2, correct,
+                       NB_EXAMPLES);
+                if (correct == NB_EXAMPLES)
+                        successes++;
+                neural_network_destroy(extra);
+        }
 
-		printf("\nRaw Comparison\n");
-		printf("Network 1: %.17f %.17f\n", network->output[0],
-		       network->output[1]);
-		printf("Network 2: %.17f %.17f\n", network2->output[0],
-		       network2->output[1]);
-		neural_network_destroy(network2);
-	}
-	neural_network_destroy(network);
-
-	
-	// creating 5 more networks to prove the neural network works
-	network2 =
-	    neural_network_create(input_size, hidden_size, output_size);
-	if (!network2) {
-
-		printf("Error creating the network");
-		return EXIT_FAILURE;
-	}
-	NeuralNetwork *network3 =
-	    neural_network_create(input_size, hidden_size, output_size);
-	if (!network3) {
-		printf("Error creating the network");
-		neural_network_destroy(network2);
-		return EXIT_FAILURE;
-	}
-	NeuralNetwork *network4 =
-	    neural_network_create(input_size, hidden_size, output_size);
-	if (!network4) {
-		printf("Error creating the network");
-		neural_network_destroy(network2);
-		neural_network_destroy(network3);
-		return EXIT_FAILURE;
-	}
-	NeuralNetwork *network5 =
-	    neural_network_create(input_size, hidden_size, output_size);
-	if (!network5) {
-		printf("Error creating the network");
-		neural_network_destroy(network2);
-		neural_network_destroy(network3);
-		neural_network_destroy(network4);
-		return EXIT_FAILURE;
-	}
-	NeuralNetwork *network6 =
-	    neural_network_create(input_size, hidden_size, output_size);
-	if (!network6) {
-		printf("Error creating the network");
-		neural_network_destroy(network2);
-		neural_network_destroy(network3);
-		neural_network_destroy(network4);
-		neural_network_destroy(network5);
-		return EXIT_FAILURE;
-	}
-	
-	// training all the networks
-	printf("Here's the result of the training of 5 other " 
-			"networks with randomly initialized weights\n");
-	printf("Network 2\n");	
-	neural_network_train(network2, &dataset, 2000, 0.1);
-	printf("Network 3\n");	
-	neural_network_train(network3, &dataset, 2000, 0.1);
-	printf("Network 4\n");	
-	neural_network_train(network4, &dataset, 2000, 0.1);
-	printf("Network 5\n");	
-	neural_network_train(network5, &dataset, 2000, 0.1);
-	printf("Network 6\n");	
-	neural_network_train(network6, &dataset, 2000, 0.1);
-
-	// releasing all the network allocated
-	neural_network_destroy(network2);
-	neural_network_destroy(network3);
-	neural_network_destroy(network4);
-	neural_network_destroy(network5);
-	neural_network_destroy(network6);
+        printf("\n%d/%d networks learned XNOR\n", successes,
+               NB_EXTRA_NETWORKS + 1);
+        return EXIT_SUCCESS;
 }
