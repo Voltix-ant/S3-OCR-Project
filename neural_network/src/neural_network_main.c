@@ -82,7 +82,7 @@ int main(void) {
 	       translate_output_to_xnor(output));
 
 	if (network2) {
-		printf("\nPrediction after loading:\n");
+		printf("\nPrediction after loading %s:\n", SAVE_PATH);
 		neural_network_predict(network2, input_0, output);
 		printf("%.1f == %.1f = %d\n", input_0[0], input_0[1],
 		       translate_output_to_xnor(output));
@@ -112,7 +112,7 @@ int main(void) {
 	// creating 5 more networks to prove the neural network works
 	network2 =
 	    neural_network_create(input_size, hidden_size, output_size);
-	if (!network) {
+	if (!network2) {
 
 		printf("Error creating the network");
 		return EXIT_FAILURE;
@@ -153,7 +153,18 @@ int main(void) {
 	}
 	
 	// training all the networks
-	
+	printf("Here's the result of the training of 5 other " 
+			"networks with randomly initialized weights\n");
+	printf("Network 2\n");	
+	neural_network_train(network2, &dataset, 2000, 0.1);
+	printf("Network 3\n");	
+	neural_network_train(network3, &dataset, 2000, 0.1);
+	printf("Network 4\n");	
+	neural_network_train(network4, &dataset, 2000, 0.1);
+	printf("Network 5\n");	
+	neural_network_train(network5, &dataset, 2000, 0.1);
+	printf("Network 6\n");	
+	neural_network_train(network6, &dataset, 2000, 0.1);
 
 	// releasing all the network allocated
 	neural_network_destroy(network2);
