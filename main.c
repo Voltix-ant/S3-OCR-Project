@@ -32,25 +32,25 @@ int main(int argc, char *argv[])
 	SDL_Surface *img = IMG_Load(argv[1]);
 	if (!img)
 	{
-			printf("Error: failed to load image: %s\n", IMG_GetError());
-    		terminate(window, renderer);
-			IMG_Quit();
-			return 1;
+		printf("Error: failed to load image: %s\n", IMG_GetError());
+    	terminate(window, renderer);
+		IMG_Quit();
+		return 1;
 	}
 
 	SDL_Surface *og_img = SDL_ConvertSurfaceFormat(
-					img,
-					SDL_PIXELFORMAT_ARGB8888,
-					0
-					);
+		img,
+		SDL_PIXELFORMAT_ARGB8888,
+		0
+		);
 	SDL_FreeSurface(img);
 
 	if (!og_img)
 	{
-			printf("Error: failed image conversion: %s\n", SDL_GetError());
-    		terminate(window, renderer);
-			IMG_Quit();
-			return 1;
+		printf("Error: failed image conversion: %s\n", SDL_GetError());
+    	terminate(window, renderer);
+		IMG_Quit();
+		return 1;
 	}
 
 	// Application of the pretreatment functions
@@ -61,10 +61,10 @@ int main(int argc, char *argv[])
 	SDL_Texture *og_tex = SDL_CreateTextureFromSurface(renderer, og_img);
 	if (!og_tex)
 	{
-			printf("Error: couldn't create image texture\n");
-    		terminate(window, renderer);
-			IMG_Quit();
-			return 1;
+		printf("Error: couldn't create image texture\n");
+    	terminate(window, renderer);
+		IMG_Quit();
+		return 1;
 	}
 
     // Retrieving image dimensions
@@ -187,14 +187,14 @@ int main(int argc, char *argv[])
         SDL_Rect fitted_preview = get_fitted_rect(preview, img_w, img_h);
         SDL_RenderSetClipRect(renderer, &preview);
         SDL_RenderCopyEx(
-                renderer,
-                og_tex,
-                NULL,
-                &fitted_preview,
-                (double)slider.angle,
-                NULL,
-                SDL_FLIP_NONE
-                );
+			renderer,
+            og_tex,
+            NULL,
+            &fitted_preview,
+            (double)slider.angle,
+            NULL,
+            SDL_FLIP_NONE
+            );
 		display_preview_grid(renderer, preview);
         SDL_RenderSetClipRect(renderer, NULL);
 
