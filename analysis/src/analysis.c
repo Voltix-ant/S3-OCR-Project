@@ -162,13 +162,18 @@ struct matrix *analysis_word_letter(const struct analysis *a,
 // ===================== Debug =====================
 
 int analysis_save_debug(const struct analysis *a, SDL_Surface *s) {
+    SDL_Surface *rec_regions = SDL_DuplicateSurface(s);
     SDL_Surface *macro = SDL_DuplicateSurface(s);
     SDL_Surface *letters = SDL_DuplicateSurface(s);
-    if (!macro || !letters) {
+    if (!rec_regions || !macro || !letters) {
+        SDL_FreeSurface(rec_regions);
         SDL_FreeSurface(macro);      // SDL_FreeSurface(NULL) is safe
         SDL_FreeSurface(letters);
         return -1;
     }
+    
+    draw_regions(rec_regions, a->root);
+    save_result(rec_regions, "recursive_regions.png");
 
     draw_macro_zones(macro, a->leaves, a->nb_leaves);
     save_result(macro, "macro_zones.png");
@@ -178,6 +183,7 @@ int analysis_save_debug(const struct analysis *a, SDL_Surface *s) {
         draw_letter_grid(letters, a->wordlists[i], REGION_WORDLIST);
     save_result(letters, "letter_grid.png");
 
+    SDL_FreeSurface(rec_regions);
     SDL_FreeSurface(macro);
     SDL_FreeSurface(letters);
     return 0;

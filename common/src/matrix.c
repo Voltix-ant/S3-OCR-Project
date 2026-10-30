@@ -16,10 +16,11 @@ struct matrix *create_char_matrix(void) {
 }
 
 void print_matrix(struct matrix *m) {
+    printf("  ");
     for (size_t a = 0; a < 2*m->width +2; a++) printf("_");
     printf("\n");
     for (size_t y = 0; y < m->height; y++) {
-        printf("|");
+        printf("  |");
         for (size_t x = 0; x < m->width; x++) {
             if (m->data[y][x] == 0) {
                 printf("  ");
@@ -29,6 +30,7 @@ void print_matrix(struct matrix *m) {
         }
         printf("|\n");
     }
+    printf("  ");
     for (size_t a = 0; a < 2*m->width +2; a++) printf("_");
     printf("\n");
 }

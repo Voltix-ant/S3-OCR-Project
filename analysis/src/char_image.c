@@ -63,6 +63,5 @@ struct matrix *letter_to_28(struct matrix *img, struct box b) {
             out->data[y][x] = (unsigned char)(255 - coverage * 255 + 0.5);
         }
     }
-    print_matrix(out);
     return out;
 }

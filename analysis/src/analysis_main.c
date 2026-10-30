@@ -38,7 +38,12 @@ int main(int argc, char **argv) {
     // Create debug_images
     analysis_save_debug(a, binarized);
 
+    printf("Première lettre de la grille en 28 par 28 :\n");
+    struct matrix *l = analysis_grid_letter(a, 0, 0);
+    print_matrix(l);
+
     // Destroy everything
+    destroy_matrix(l);
     analysis_destroy(a);
 
 
