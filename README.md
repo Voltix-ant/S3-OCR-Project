@@ -1,5 +1,36 @@
 # S3-OCR-Project
 
+## User Interface module
+
+This module handles the graphical interface of the application, built
+with SDL2 to ensure performance and memory safety.
+
+### Architecture & Features
+
+- **Responsive layout.** The window is resizable (`SDL_WINDOW_RESIZABLE`).
+The control panel and preview zones are calculated using dynamic formulas to
+adapt to any screen.
+- **Preview ratio preservation.** The `get_fitted_rect` function allows the
+preview image and text textures to keep their original proportions.
+- **Custom buttons.** Button text is rendered via pre-loaded PNG images
+to bypass `SDL_ttf` constraints.
+- **Buttons' behavior.** The event loop relies on an `update_buttons` function
+returning the clicked button's index, centralizing execution logic in the
+`main` function.
+- **Manual rotation slider.** Manual image rotation uses `double` precision for
+fluid, sub-degree adjustments.
+
+## Pretreatment module
+
+This module prepares the raw input images for the neural network by correcting
+lighting, noise, and alignment.
+
+### Features
+
+- **Bradley-Roth Adaptive Thresholding:** Binarizes the image using a local
+adaptive thresholding algorithm (integral image technique).
+The tolerance parameter (`t = 0.10`) is set to preserve thin characters.
+
 ## Analysis module
 
 This module takes a preprocessed image of a word search puzzle and finds the
