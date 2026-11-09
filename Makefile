@@ -52,7 +52,7 @@ neuralnetwork: $(COMMON_OBJ) $(NEURAL_NETWORK_OBJ)
 	$(CC) $^ -o neural_network_test $(CFLAGS) $(LIBFLAGS)
 
 solver: $(COMMON_OBJ) $(SOLVER_OBJ)
-	$(CC) $^ -o solver $(CFLAGS) $(LIBFLAGS)
+	$(CC) $^ -o solver_test $(CFLAGS) $(LIBFLAGS)
 
 %.o: %.c
 	$(CC) $< -c -o $@ $(CFLAGS) $(LIBFLAGS)
@@ -64,7 +64,7 @@ clean:
 	# neural network :
 	$(RM) $(NEURAL_NETWORK_OBJ) neural_network_test
 	# solver :
-	$(RM) $(SOLVER_OBJ) solver
+	$(RM) $(SOLVER_OBJ) solver_test
 	# ui :
 	$(RM) $(UI_OBJ)
 	# pretreatment
