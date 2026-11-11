@@ -2,6 +2,7 @@
 #include <err.h>
 #include "image_io.h"
 #include "analysis.h"
+#include "deskew.h"
 #include "common/src/matrix.h"
 
 #include "debug_draw.h"
@@ -14,6 +15,7 @@ int main(int argc, char **argv) {
     SDL_Surface *s = load_image(argv[1]);
     struct matrix *mat = img_to_matrix(s);
     
+    /*
     // Save grayscaled version
     SDL_Surface *grayscale = matrix_to_img(mat);
     save_result(grayscale,"grayscale.png");
@@ -22,7 +24,12 @@ int main(int argc, char **argv) {
     // Save binarised version
     binarize_matrix(mat, mat->width/20, 10);
     SDL_Surface *binarized = matrix_to_img(mat);
-    save_result(binarized,"binarized.png");
+    save_result(binarized,"binarized.png");*/
+
+    double final_res = find_deskew_angle(mat);
+    printf("Final best : %.2f\n",final_res);
+
+    /*
 
     // run the actual analysis
     struct analysis *a = analysis_run(mat);
@@ -45,10 +52,10 @@ int main(int argc, char **argv) {
     // Destroy everything
     destroy_matrix(l);
     analysis_destroy(a);
-
+    */
 
     destroy_matrix(mat);
-    SDL_FreeSurface(binarized);
+    //SDL_FreeSurface(binarized);
     SDL_FreeSurface(s);
     return 0;
 }
