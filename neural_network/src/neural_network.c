@@ -225,9 +225,12 @@ void neural_network_gradient_descent(NeuralNetwork *network,
 
 void neural_network_train(NeuralNetwork *network, Dataset *dataset,
 			  size_t epochs, double learning_rate) {
-	if (!network || !dataset || dataset->size == 0) {
+	if (!network || !dataset || dataset->size == 0 || epochs == 0) {
 		return;
 	}
+
+	// print the loss about 4 times, at least once per epoch if epochs < 4
+	size_t log_step = epochs / 4 > 0 ? epochs / 4 : 1;
 
 	for (size_t epoch = 0; epoch < epochs; epoch++) {
 		double total_loss = 0.0;
@@ -252,11 +255,9 @@ void neural_network_train(NeuralNetwork *network, Dataset *dataset,
 
 			gradient_destroy(gradient);
 		}
-		if ((epoch % (epochs/4)) == 0 || epoch == epochs-1) {
-			printf("Epoch %zu/%zu - loss: %.6f\n", 
-					epoch + 1, epochs,
-		       	total_loss / (double)dataset->size);
-	
+		if (epoch % log_step == 0 || epoch == epochs - 1) {
+			printf("Epoch %zu/%zu - loss: %.6f\n", epoch + 1,
+			       epochs, total_loss / (double)dataset->size);
 		}
 	}
 }
