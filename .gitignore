@@ -2,8 +2,9 @@
 detec_steps/
 steps/
 
-# neural network saves:
+# neural network saves (the trained letter weights are kept for the demo):
 neural_network/saves/*.txt
+!neural_network/saves/letters.txt
 
 # solver:
 /solver
