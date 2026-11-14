@@ -179,8 +179,6 @@ SDL_Surface *rotate_surface(SDL_Surface *src, double angle_deg) {
             0, nw, nh, 32, SDL_PIXELFORMAT_ARGB8888);
     if (!dst) return NULL;
 
-    Uint32 white = SDL_MapRGB(dst->format, 255, 255, 255);
-    Uint32 black = SDL_MapRGB(dst->format, 0, 0, 0);
     double cx = w / 2.0, cy = h / 2.0, ncx = nw / 2.0, ncy = nh / 2.0;
 
     for (int y = 0; y < nh; y++)
@@ -200,7 +198,11 @@ SDL_Surface *rotate_surface(SDL_Surface *src, double angle_deg) {
                      + gray_at(src, x0,     y0 + 1) * (1 - fx) * fy
                      + gray_at(src, x0 + 1, y0 + 1) * fx       * fy;
 
-            set_pixel(dst, x, y, v < 128 ? black : white);
+            // keep the interpolated grey level : binarisation is done afterwards
+            if (v < 0) v = 0;
+            if (v > 255) v = 255;
+            Uint8 g = (Uint8)(v + 0.5);
+            set_pixel(dst, x, y, SDL_MapRGB(dst->format, g, g, g));
         }
     }
     return dst;

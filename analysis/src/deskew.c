@@ -115,6 +115,6 @@ double find_deskew_angle(struct matrix *m) {
     free(yps);
     free(cys);
     free(cxs);
-    if (final_res >= 0.5 && final_res <= 0.5) return 0.0;
+    if (final_res >= -0.5 && final_res <= 0.5) return 0.0;
     return final_res;
 }

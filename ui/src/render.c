@@ -191,11 +191,17 @@ void update_buttons_pos(Button *buttons, SDL_Rect panel)
     buttons[0].rect.x = btn_x;
     buttons[0].rect.y = panel.y + panel.h / 2 - btn_h / 2;
 
-    // "Start analysis" button
+    // "Auto rotate" button
     buttons[1].rect.w = btn_w;
     buttons[1].rect.h = btn_h;
     buttons[1].rect.x = btn_x;
-    buttons[1].rect.y = panel.y + panel.h * 3/4 - btn_h / 2;
+    buttons[1].rect.y = panel.y + panel.h * 4/6 - btn_h / 2;
+
+    // "Start analysis" button
+    buttons[2].rect.w = btn_w;
+    buttons[2].rect.h = btn_h;
+    buttons[2].rect.x = btn_x;
+    buttons[2].rect.y = panel.y + panel.h * 5/6 - btn_h / 2;
 }
 
 int update_buttons(Button *buttons, int nb_btns, SDL_Event *event)

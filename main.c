@@ -3,6 +3,7 @@
 #include "common/src/matrix.h"
 #include "analysis/src/analysis.h"
 #include "analysis/src/debug_draw.h"
+#include "analysis/src/deskew.h"
 
 
 int main(int argc, char *argv[])
@@ -53,13 +54,17 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+    // Create a surface for the display
+    SDL_Surface *display_img = SDL_DuplicateSurface(og_img);
 	// Application of the pretreatment functions
-	grayscale(og_img);
-	adaptive_threshold(og_img);
+	grayscale(display_img);
+	grayscale(og_img); // not binarised for better rotation
+    save_result(og_img,"0-grayscale.png");
+	adaptive_threshold(display_img);
 
 	// Creation of the rendering texture
-	SDL_Texture *og_tex = SDL_CreateTextureFromSurface(renderer, og_img);
-	if (!og_tex)
+	SDL_Texture *display_tex = SDL_CreateTextureFromSurface(renderer, display_img);
+	if (!display_tex)
 	{
 		printf("Error: couldn't create image texture\n");
     	terminate(window, renderer);
@@ -69,10 +74,10 @@ int main(int argc, char *argv[])
 
     // Retrieving image dimensions
     int img_w, img_h;
-    SDL_QueryTexture(og_tex, NULL, NULL, &img_w, &img_h);
+    SDL_QueryTexture(display_tex, NULL, NULL, &img_w, &img_h);
 
 	// Creating all the interface's buttons
-	int nb_buttons = 2;
+	int nb_buttons = 3;
 	Button buttons[nb_buttons];
 	// "Save image" button
 	buttons[0].is_active = 0; // Saving an image can only be done after analysis
@@ -81,12 +86,12 @@ int main(int argc, char *argv[])
 	if (!buttons[0].text)
 	{
 		printf("Error loading button texture: %s\n", IMG_GetError());
-		SDL_DestroyTexture(og_tex);
+		SDL_DestroyTexture(display_tex);
 		terminate(window, renderer);
 		IMG_Quit();
 		return 1;
 	}
-	// "Start analysis" button
+	// "Auto rotate" button
 	buttons[1].is_active = 1;
 	buttons[1].is_hovered = 0;
 	buttons[1].text = IMG_LoadTexture(renderer, "ui/assets/start_analysis.png");
@@ -94,7 +99,21 @@ int main(int argc, char *argv[])
 	{
 		printf("Error loading button texture: %s\n", IMG_GetError());
 		SDL_DestroyTexture(buttons[0].text);
-		SDL_DestroyTexture(og_tex);
+		SDL_DestroyTexture(display_tex);
+		terminate(window, renderer);
+		IMG_Quit();
+		return 1;
+	}
+	// "Start analysis" button
+	buttons[2].is_active = 1;
+	buttons[2].is_hovered = 0;
+	buttons[2].text = IMG_LoadTexture(renderer, "ui/assets/start_analysis.png");
+	if (!buttons[2].text)
+	{
+		printf("Error loading button texture: %s\n", IMG_GetError());
+		SDL_DestroyTexture(buttons[0].text);
+		SDL_DestroyTexture(buttons[1].text);
+		SDL_DestroyTexture(display_tex);
 		terminate(window, renderer);
 		IMG_Quit();
 		return 1;
@@ -140,15 +159,33 @@ int main(int argc, char *argv[])
 			if (btn_index == 0) // SAVE IMAGE
 			{
 				printf("DEBUG: \"Save image\" button clicked.\n"); // TO REPLACE
-			}
-			else if (btn_index == 1) // START ANALYSIS
+			} else if (btn_index == 1) // START ANALYSIS
+            {
+				printf("DEBUG: \"Auto rotate\" button clicked.\n"); // TO REPLACE
+                SDL_Surface *auto_rot = SDL_DuplicateSurface(og_img);
+                adaptive_threshold(auto_rot);
+                
+                struct matrix *mat = surface_to_matrix(auto_rot);
+
+                // determine deskew angle (between -45° and 45°)
+                double deskew_angle = find_deskew_angle(mat);
+                printf("Deskew angle : %.2f\n",deskew_angle);
+                // Apply to the slider
+                slider.angle = deskew_angle*-1;
+	            SDL_FreeSurface(auto_rot);
+
+			} else if (btn_index == 2) // START ANALYSIS
 			{
+				printf("DEBUG: \"Start analysis\" button clicked.\n"); // TO REPLACE
 				// Rotate the surface
                 SDL_Surface *rot = rotate_surface(og_img, slider.angle);
+
+                save_result(rot,"1-rotation.png");
+                adaptive_threshold(rot);
                 // Translate it to a matrix
                 struct matrix *mat = surface_to_matrix(rot);
                 // Save an image of the rotated version
-                save_result(rot,"rotation.png");
+                save_result(rot,"2-binarized.png");
 
                 // run analysis
                 struct analysis *a = analysis_run(mat);
@@ -163,7 +200,6 @@ int main(int argc, char *argv[])
                 SDL_FreeSurface(rot);
 			}
 		}
-
 		// RENDERING
 		// NOTE: remember to get the current window size
 		// to adapt the rendering scales
@@ -188,7 +224,7 @@ int main(int argc, char *argv[])
         SDL_RenderSetClipRect(renderer, &preview);
         SDL_RenderCopyEx(
 			renderer,
-            og_tex,
+            display_tex,
             NULL,
             &fitted_preview,
             (double)slider.angle,
@@ -203,8 +239,9 @@ int main(int argc, char *argv[])
         SDL_Delay(1000/60);
     }
 
-	SDL_DestroyTexture(og_tex);
+	SDL_DestroyTexture(display_tex);
 	IMG_Quit();
+	SDL_FreeSurface(display_img);
 	SDL_FreeSurface(og_img);
     terminate(window, renderer);
 
