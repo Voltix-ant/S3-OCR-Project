@@ -29,14 +29,19 @@ SOLVER_OBJ = $(SOLVER_MAIN:.c=.o) $(SOLVER_SRC:.c=.o)
 UI_SRC = $(wildcard ui/src/*.c)
 UI_OBJ = $(UI_SRC:.c=.o)
 
-# Pretreatment file :
+# Pretreatment files :
 PRETREATMENT_SRC = $(wildcard pretreatment/src/*.c)
 PRETREATMENT_OBJ = $(PRETREATMENT_SRC:.c=.o)
+
+# Render files
+RENDER_MAIN = render/src/render_main.c
+RENDER_SRC  = $(filter-out $(RENDER_MAIN),$(wildcard render/src/*.c))
+RENDER_OBJ  = $(RENDER_MAIN:.c=.o) $(RENDER_SRC:.c=.o) $(ANALYSIS_SRC:.c=.o)
 
 # Whole project :
 EXEC_NAME = ocr
 SRC = main.c $(COMMON_SRC) $(ANALYSIS_SRC) $(NEURAL_NETWORK_SRC) \
-	  $(PRETREATMENT_SRC) $(UI_SRC) $(SOLVER_SRC)
+	  $(PRETREATMENT_SRC) $(UI_SRC) $(SOLVER_SRC) $(RENDER_SRC)
 OBJ = $(SRC:.c=.o)
 
 all: $(OBJ)
@@ -54,6 +59,9 @@ neuralnetwork: $(COMMON_OBJ) $(NEURAL_NETWORK_OBJ)
 solver: $(COMMON_OBJ) $(SOLVER_OBJ)
 	$(CC) $^ -o solver $(CFLAGS) $(LIBFLAGS)
 
+render: $(COMMON_OBJ) $(RENDER_OBJ)
+	$(CC) $^ -o render_test $(CFLAGS) $(LIBFLAGS)
+
 %.o: %.c
 	$(CC) $< -c -o $@ $(CFLAGS) $(LIBFLAGS)
 
@@ -69,5 +77,7 @@ clean:
 	$(RM) $(UI_OBJ)
 	# pretreatment
 	$(RM) $(PRETREATMENT_OBJ)
+	# render
+	$(RM) $(RENDER_OBJ) render_test
 
-.PHONY: all analysis neuralnetwork clean
+.PHONY: all analysis neuralnetwork render clean
