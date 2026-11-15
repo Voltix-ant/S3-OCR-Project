@@ -18,5 +18,6 @@ struct matrix {
 struct matrix *create_char_matrix(void);
 void print_matrix(struct matrix *m);
 void destroy_matrix(struct matrix *m);
+struct matrix *matrix_rotate90(struct matrix *m, int quarter_turns);
 
 #endif

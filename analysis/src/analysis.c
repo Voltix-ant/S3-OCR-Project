@@ -173,15 +173,15 @@ int analysis_save_debug(const struct analysis *a, SDL_Surface *s) {
     }
     
     draw_regions(rec_regions, a->root);
-    save_result(rec_regions, "3-recursive_regions.png");
+    save_result(rec_regions, "4-recursive_regions.png");
 
     draw_macro_zones(macro, a->leaves, a->nb_leaves);
-    save_result(macro, "4-macro_zones.png");
+    save_result(macro, "5-macro_zones.png");
 
     draw_letter_grid(letters, a->grid, REGION_GRID);
     for (size_t i = 0; i < a->nb_wordlists; i++)
         draw_letter_grid(letters, a->wordlists[i], REGION_WORDLIST);
-    save_result(letters, "5-letter_grid.png");
+    save_result(letters, "6-letter_grid.png");
 
     SDL_FreeSurface(rec_regions);
     SDL_FreeSurface(macro);

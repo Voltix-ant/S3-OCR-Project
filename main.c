@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	// Application of the pretreatment functions
 	grayscale(display_img);
 	grayscale(og_img); // not binarised for better rotation
-    save_result(og_img,"0-grayscale.png");
+    save_result(og_img,"1-grayscale.png");
 	adaptive_threshold(display_img);
 
 	// Creation of the rendering texture
@@ -180,12 +180,12 @@ int main(int argc, char *argv[])
 				// Rotate the surface
                 SDL_Surface *rot = rotate_surface(og_img, slider.angle);
 
-                save_result(rot,"1-rotation.png");
+                save_result(rot,"2-rotation.png");
                 adaptive_threshold(rot);
                 // Translate it to a matrix
                 struct matrix *mat = surface_to_matrix(rot);
                 // Save an image of the rotated version
-                save_result(rot,"2-binarized.png");
+                save_result(rot,"3-binarized.png");
 
                 // run analysis
                 struct analysis *a = analysis_run(mat);

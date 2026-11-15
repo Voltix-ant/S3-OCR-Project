@@ -41,7 +41,7 @@ double find_deskew_angle(struct matrix *m) {
     int char_h = median_box_height(comps);
     filter_letter_boxes(comps, char_h);
 
-    // If not enough information, return 0.0;
+    // If not enough information;
     const size_t min_boxes = 20;
     if (char_h == 0 || comps->count < min_boxes) {
         destroy_box_list(comps);
