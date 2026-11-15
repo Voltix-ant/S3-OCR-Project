@@ -1,3 +1,9 @@
+# executables
+ocr
+analysis_test
+neural_network_test
+solver_test
+
 # analysis temp/debug images :
 detec_steps/
 steps/

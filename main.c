@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	// "Auto rotate" button
 	buttons[1].is_active = 1;
 	buttons[1].is_hovered = 0;
-	buttons[1].text = IMG_LoadTexture(renderer, "ui/assets/start_analysis.png");
+	buttons[1].text = IMG_LoadTexture(renderer, "ui/assets/auto_rotate.png");
 	if (!buttons[1].text)
 	{
 		printf("Error loading button texture: %s\n", IMG_GetError());
@@ -172,6 +172,7 @@ int main(int argc, char *argv[])
                 printf("Deskew angle : %.2f\n",deskew_angle);
                 // Apply to the slider
                 slider.angle = deskew_angle*-1;
+                destroy_matrix(mat);
 	            SDL_FreeSurface(auto_rot);
 
 			} else if (btn_index == 2) // START ANALYSIS
