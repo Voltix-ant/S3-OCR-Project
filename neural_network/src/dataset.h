@@ -3,14 +3,12 @@
 
 #include <stddef.h>
 
-/* One training example: an input vector and its expected one-hot output. */
 typedef struct
 {
     double *input;
     double *expected;
 } TrainingExample;
 
-/* A set of `size` examples sharing the same input and output sizes. */
 typedef struct
 {
     TrainingExample *examples;
@@ -18,5 +16,7 @@ typedef struct
     size_t input_size;
     size_t output_size;
 } Dataset;
+
+char *labels_read_grid(const char *path, size_t *rows, size_t *cols);
 
 #endif
