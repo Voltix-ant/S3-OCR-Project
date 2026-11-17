@@ -111,3 +111,10 @@ char *labels_read_grid(const char *path, size_t *rows, size_t *cols) {
 	*cols = width;
 	return grid;
 }
+
+
+
+Dataset *dataset_from_grid(const struct analysis *analysis,
+					   const char *labels, size_t rows, size_t cols);
+Dataset *dataset_concat(Dataset **datasets, size_t count);
+void dataset_free(Dataset *dataset);
