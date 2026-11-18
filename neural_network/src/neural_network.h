@@ -32,6 +32,8 @@ typedef struct {
 Gradient *gradient_create(const NeuralNetwork *network);
 /* Frees a gradient. Does nothing if `gradient` is NULL. */
 void gradient_destroy(Gradient *gradient);
+/* Sets every value of a gradient created for `network` back to 0. */
+void gradient_reset(Gradient *gradient, const NeuralNetwork *network);
 
 /*
  * Creates a network with the given layer sizes. Weights are initialized
@@ -50,20 +52,34 @@ void neural_network_destroy(NeuralNetwork *neural_network);
 void neural_network_forward(NeuralNetwork *network, const double *input);
 
 /*
+ * Backpropagation for one example: ADDS the gradient of the cross-entropy
+ * loss to `gradient`, so that the gradients of a batch can be summed.
+ * Must be called right after neural_network_forward on the same input.
+ */
+void neural_network_backward_add(const NeuralNetwork *network,
+				 const double *input, const double *expected,
+				 Gradient *gradient);
+
+/*
  * Backpropagation for one example. Must be called right after
- * neural_network_forward on the same input. Returns the gradient of the
+ * neural_network_forward on the same input. Returns a new gradient of the
  * cross-entropy loss (to free with gradient_destroy), or NULL on error.
  */
 Gradient *neural_network_backward(NeuralNetwork *network, const double *input,
 				  const double *expected);
 
 /*
- * Trains the network with stochastic gradient descent: for each epoch,
- * every example is passed forward, backpropagated, and the weights are
- * updated with the given learning rate. Prints the mean loss per epoch.
+ * Trains the network with mini-batch gradient descent. Each epoch shuffles
+ * the order of the examples, cuts it into batches of `batch_size` examples
+ * (the last one can be smaller), sums their gradients and updates the
+ * weights once per batch with learning_rate / (examples in the batch).
+ * batch_size = 1 is plain stochastic gradient descent. The order uses
+ * rand(): call srand() before to get reproducible results.
+ * Prints the mean loss about 4 times.
  */
 void neural_network_train(NeuralNetwork *network, Dataset *dataset,
-			  size_t epochs, double learning_rate);
+			  size_t epochs, double learning_rate,
+			  size_t batch_size);
 
 /* Runs the network on `input` and copies the probabilities into `output`. */
 void neural_network_predict(NeuralNetwork *network, const double *input,

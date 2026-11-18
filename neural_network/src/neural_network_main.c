@@ -8,6 +8,7 @@
 #define NB_EXTRA_NETWORKS 7
 #define EPOCHS 2000
 #define LEARNING_RATE 0.1
+#define BATCH_SIZE 1
 
 static double input_0[] = {1.0, 0.0};
 static double input_1[] = {0.0, 0.0};
@@ -74,7 +75,8 @@ int main(void)
         }
 
         printf("Starting the training\n");
-        neural_network_train(network, &dataset, EPOCHS, LEARNING_RATE);
+        neural_network_train(network, &dataset, EPOCHS, LEARNING_RATE,
+                             BATCH_SIZE);
 
         // saving and loading the network
         if (neural_network_save(network, SAVE_PATH) == -1)
@@ -115,7 +117,8 @@ int main(void)
                         fprintf(stderr, "Error creating network %d\n", i + 2);
                         return EXIT_FAILURE;
                 }
-                neural_network_train(extra, &dataset, EPOCHS, LEARNING_RATE);
+                neural_network_train(extra, &dataset, EPOCHS, LEARNING_RATE,
+                             BATCH_SIZE);
                 int correct = count_correct(extra);
                 printf("Network %d: %d/%d correct\n", i + 2, correct,
                        NB_EXAMPLES);
