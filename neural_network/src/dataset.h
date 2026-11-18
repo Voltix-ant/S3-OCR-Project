@@ -3,6 +3,9 @@
 
 #include <stddef.h>
 
+/* Defined in analysis/src/analysis.h, only used through a pointer here. */
+struct analysis;
+
 typedef struct
 {
     double *input;
@@ -18,5 +21,12 @@ typedef struct
 } Dataset;
 
 char *labels_read_grid(const char *path, size_t *rows, size_t *cols);
+
+Dataset *dataset_from_grid(const struct analysis *analysis,
+			   const char *labels, size_t rows, size_t cols);
+
+Dataset *dataset_concat(Dataset **datasets, size_t count);
+
+void dataset_free(Dataset *dataset);
 
 #endif

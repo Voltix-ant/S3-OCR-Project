@@ -48,7 +48,8 @@ analysis: $(COMMON_OBJ) $(ANALYSIS_OBJ)
 	# compile the main function in analysis/src/analysis_main
 	$(CC) $^ -o analysis_test $(CFLAGS) $(LIBFLAGS)
 
-neuralnetwork: $(COMMON_OBJ) $(NEURAL_NETWORK_OBJ)
+# the dataset uses the analysis module
+neuralnetwork: $(COMMON_OBJ) $(NEURAL_NETWORK_OBJ) $(ANALYSIS_SRC:.c=.o)
 	$(CC) $^ -o neural_network_test $(CFLAGS) $(LIBFLAGS)
 
 solver: $(COMMON_OBJ) $(SOLVER_OBJ)

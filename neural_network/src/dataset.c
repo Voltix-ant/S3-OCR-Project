@@ -1,4 +1,6 @@
 #include "dataset.h"
+#include "analysis.h"
+#include "letters.h"
 #include <ctype.h>
 #include <err.h>
 #include <stdio.h>
@@ -113,8 +115,130 @@ char *labels_read_grid(const char *path, size_t *rows, size_t *cols) {
 }
 
 
+static Dataset *dataset_create(size_t size, size_t input_size,
+			       size_t output_size) {
+	if (size == 0) {
+		return NULL;
+	}
+
+	Dataset *dataset = malloc(sizeof(Dataset));
+	if (!dataset) {
+		return NULL;
+	}
+	dataset->examples = malloc(size * sizeof(TrainingExample));
+	double *inputs = calloc(size * input_size, sizeof(double));
+	double *expected = calloc(size * output_size, sizeof(double));
+	if (!dataset->examples || !inputs || !expected) {
+		free(dataset->examples);
+		free(inputs);
+		free(expected);
+		free(dataset);
+		return NULL;
+	}
+
+	for (size_t i = 0; i < size; i++) {
+		dataset->examples[i].input = inputs + i * input_size;
+		dataset->examples[i].expected = expected + i * output_size;
+	}
+	dataset->size = size;
+	dataset->input_size = input_size;
+	dataset->output_size = output_size;
+	return dataset;
+}
 
 Dataset *dataset_from_grid(const struct analysis *analysis,
-					   const char *labels, size_t rows, size_t cols);
-Dataset *dataset_concat(Dataset **datasets, size_t count);
-void dataset_free(Dataset *dataset);
+			   const char *labels, size_t rows, size_t cols) {
+	if (!analysis || !labels) {
+		return NULL;
+	}
+
+	size_t found_rows = analysis_grid_rows(analysis);
+	size_t found_cols = analysis_grid_cols(analysis);
+	if (found_rows != rows || found_cols != cols) {
+		warnx("dataset: grid of %zux%zu letters found, %zux%zu "
+		      "expected",
+		      found_rows, found_cols, rows, cols);
+		return NULL;
+	}
+
+	Dataset *dataset = dataset_create(rows * cols, LETTER_INPUT_SIZE,
+					  LETTER_OUTPUT_SIZE);
+	if (!dataset) {
+		return NULL;
+	}
+
+	for (size_t y = 0; y < rows; y++) {
+		for (size_t x = 0; x < cols; x++) {
+			TrainingExample *example =
+			    &dataset->examples[y * cols + x];
+			struct matrix *letter =
+			    analysis_grid_letter(analysis, y, x);
+
+			int error =
+			    letter_matrix_to_input(letter, example->input);
+			if (error == 0) {
+				error = letter_to_expected(labels[y * cols + x],
+							   example->expected);
+			}
+			destroy_matrix(letter);
+
+			if (error == -1) {
+				warnx("dataset: invalid letter at row %zu, "
+				      "column %zu",
+				      y, x);
+				dataset_free(dataset);
+				return NULL;
+			}
+		}
+	}
+	return dataset;
+}
+
+Dataset *dataset_concat(Dataset **datasets, size_t count) {
+	if (!datasets || count == 0 || !datasets[0]) {
+		return NULL;
+	}
+
+	size_t input_size = datasets[0]->input_size;
+	size_t output_size = datasets[0]->output_size;
+	size_t total = 0;
+	for (size_t i = 0; i < count; i++) {
+		if (!datasets[i] || datasets[i]->input_size != input_size ||
+		    datasets[i]->output_size != output_size) {
+			warnx("dataset: cannot concatenate dataset %zu", i);
+			return NULL;
+		}
+		total += datasets[i]->size;
+	}
+
+	Dataset *result = dataset_create(total, input_size, output_size);
+	if (!result) {
+		return NULL;
+	}
+
+	// copy the values: the source datasets can be freed afterwards
+	size_t k = 0;
+	for (size_t i = 0; i < count; i++) {
+		for (size_t j = 0; j < datasets[i]->size; j++) {
+			memcpy(result->examples[k].input,
+			       datasets[i]->examples[j].input,
+			       input_size * sizeof(double));
+			memcpy(result->examples[k].expected,
+			       datasets[i]->examples[j].expected,
+			       output_size * sizeof(double));
+			k++;
+		}
+	}
+	return result;
+}
+
+void dataset_free(Dataset *dataset) {
+	if (!dataset) {
+		return;
+	}
+	// the examples point into two blocks starting at example 0
+	free(dataset->examples[0].input);
+	free(dataset->examples[0].expected);
+	free(dataset->examples);
+	free(dataset);
+}
