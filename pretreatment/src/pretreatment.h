@@ -17,5 +17,6 @@ int adaptive_threshold(SDL_Surface *surface);
 SDL_Surface *rotate_surface(SDL_Surface *src, double angle_deg);
 struct matrix *surface_to_matrix(SDL_Surface *s);
 int gaussian_blur(SDL_Surface *surface);
+int denoise_binarized(SDL_Surface *surface);
 
 #endif
