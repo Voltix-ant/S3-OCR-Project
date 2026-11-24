@@ -9,6 +9,9 @@ neural_network/saves/*.txt
 # solver:
 /solver
 
+# letter network training:
+/train
+
 # Prerequisites
 *.d
 

@@ -1,5 +1,6 @@
 #include "letters.h"
 #include <ctype.h>
+#include <string.h>
 
 NeuralNetwork *letter_network_create(void) {
 	return neural_network_create(LETTER_INPUT_SIZE, LETTER_HIDDEN_SIZE,
@@ -64,4 +65,38 @@ char letter_recognize(NeuralNetwork *network, const struct matrix *image,
 		*confidence = network->output[best];
 	}
 	return (char)('A' + best);
+}
+
+double letter_evaluate(NeuralNetwork *network, const Dataset *dataset,
+		       size_t correct[LETTER_OUTPUT_SIZE],
+		       size_t total[LETTER_OUTPUT_SIZE]) {
+	if (!network || !dataset || dataset->size == 0) {
+		return 0.0;
+	}
+
+	size_t good[LETTER_OUTPUT_SIZE] = {0};
+	size_t count[LETTER_OUTPUT_SIZE] = {0};
+	size_t recognized = 0;
+
+	for (size_t i = 0; i < dataset->size; i++) {
+		const TrainingExample *example = &dataset->examples[i];
+
+		neural_network_forward(network, example->input);
+		char expected = letter_from_output(example->expected);
+		char found = letter_from_output(network->output);
+
+		count[expected - 'A']++;
+		if (found == expected) {
+			good[expected - 'A']++;
+			recognized++;
+		}
+	}
+
+	if (correct) {
+		memcpy(correct, good, sizeof(good));
+	}
+	if (total) {
+		memcpy(total, count, sizeof(count));
+	}
+	return (double)recognized / (double)dataset->size;
 }
