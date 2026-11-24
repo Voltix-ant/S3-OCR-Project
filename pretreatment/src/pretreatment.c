@@ -230,3 +230,66 @@ struct matrix *surface_to_matrix(SDL_Surface *s) {
     SDL_UnlockSurface(s);
     return mat;
 }
+
+// FILTERS
+
+int gaussian_blur(SDL_Surface *surface)
+{
+    /*
+    Applies a small blurring algorithm with a 3-pixel radius gaussian kernel
+    for level 2 images.
+    
+    Kernel weights (pixel per pixel):
+
+        1 2 1
+        2 4 2
+        1 2 1
+    
+    */
+
+    if (!surface) return 1;
+
+    int w = surface->w;
+    int h = surface->h;
+
+    SDL_Surface *copy = SDL_ConvertSurfaceFormat(
+        surface,
+        surface->format->format,
+        0
+    );
+    if (!copy) return 1;
+
+    for (int y = 1; y < h-1; y++)
+    {
+        for (int x = 1; x < w-1; x++)
+        {
+            int sum = 0;
+
+            // Top line
+            sum += ((get_pixel(copy, x - 1, y - 1) >> 16) & 0xFF) * 1;
+            sum += ((get_pixel(copy, x, y - 1) >> 16) & 0xFF) * 2;
+            sum += ((get_pixel(copy, x + 1, y - 1) >> 16) & 0xFF) * 1;
+
+            // Middle line
+            sum += ((get_pixel(copy, x - 1, y) >> 16) & 0xFF) * 2;
+            sum += ((get_pixel(copy, x, y) >> 16) & 0xFF) * 4;
+            sum += ((get_pixel(copy, x + 1, y) >> 16) & 0xFF) * 2;
+
+            // Bottom line
+            sum += ((get_pixel(copy, x - 1, y + 1) >> 16) & 0xFF) * 1;
+            sum += ((get_pixel(copy, x, y + 1) >> 16) & 0xFF) * 2;
+            sum += ((get_pixel(copy, x + 1, y + 1) >> 16) & 0xFF) * 1;
+
+            Uint8 res = (Uint8)(sum/16);
+            set_pixel(
+                surface,
+                x,
+                y,
+                SDL_MapRGB(surface->format, res, res, res)
+            );
+        }
+    }
+
+    SDL_FreeSurface(copy);
+    return 0;
+}

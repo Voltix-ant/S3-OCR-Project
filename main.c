@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
 
 	// Application of the pretreatment functions
 	grayscale(og_img);
+	gaussian_blur(og_img);
 	adaptive_threshold(og_img);
 
 	// Creation of the rendering texture
