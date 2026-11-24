@@ -20,4 +20,8 @@ char letter_from_output(const double *output);
 char letter_recognize(NeuralNetwork *network, const struct matrix *image,
 		      double *confidence);
 
+double letter_evaluate(NeuralNetwork *network, const Dataset *dataset,
+		       size_t correct[LETTER_OUTPUT_SIZE],
+		       size_t total[LETTER_OUTPUT_SIZE]);
+
 #endif

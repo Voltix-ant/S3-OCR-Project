@@ -16,8 +16,9 @@ ANALYSIS_OBJ  = $(ANALYSIS_MAIN:.c=.o) $(ANALYSIS_SRC:.c=.o)
 
 # Neural Network files :
 NEURAL_NETWORK_MAIN = neural_network/src/neural_network_main.c
-NEURAL_NETWORK_SRC  = \
-	$(filter-out $(NEURAL_NETWORK_MAIN),$(wildcard neural_network/src/*.c))
+TRAIN_MAIN          = neural_network/src/train_main.c
+NEURAL_NETWORK_SRC  = $(filter-out $(NEURAL_NETWORK_MAIN) $(TRAIN_MAIN), \
+	$(wildcard neural_network/src/*.c))
 NEURAL_NETWORK_OBJ  = $(NEURAL_NETWORK_MAIN:.c=.o) $(NEURAL_NETWORK_SRC:.c=.o)
 
 # Solver files :
@@ -52,6 +53,11 @@ analysis: $(COMMON_OBJ) $(ANALYSIS_OBJ)
 neuralnetwork: $(COMMON_OBJ) $(NEURAL_NETWORK_OBJ) $(ANALYSIS_SRC:.c=.o)
 	$(CC) $^ -o neural_network_test $(CFLAGS) $(LIBFLAGS)
 
+# letter network training: dataset from the level 1 images, then training
+train: $(COMMON_OBJ) $(NEURAL_NETWORK_SRC:.c=.o) $(TRAIN_MAIN:.c=.o) \
+	$(ANALYSIS_SRC:.c=.o) $(PRETREATMENT_OBJ)
+	$(CC) $^ -o train $(CFLAGS) $(LIBFLAGS)
+
 solver: $(COMMON_OBJ) $(SOLVER_OBJ)
 	$(CC) $^ -o solver $(CFLAGS) $(LIBFLAGS)
 
@@ -64,6 +70,7 @@ clean:
 	$(RM) $(ANALYSIS_OBJ) analysis_test
 	# neural network :
 	$(RM) $(NEURAL_NETWORK_OBJ) neural_network_test
+	$(RM) $(TRAIN_MAIN:.c=.o) train
 	# solver :
 	$(RM) $(SOLVER_OBJ) solver
 	# ui :
@@ -71,4 +78,4 @@ clean:
 	# pretreatment
 	$(RM) $(PRETREATMENT_OBJ)
 
-.PHONY: all analysis neuralnetwork clean
+.PHONY: all analysis neuralnetwork train clean
