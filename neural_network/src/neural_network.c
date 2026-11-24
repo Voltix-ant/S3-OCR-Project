@@ -136,64 +136,50 @@ void neural_network_forward(NeuralNetwork *network, const double *input) {
 	softmax(network->output, network->output, network->output_size);
 }
 
+void neural_network_backward_add(const NeuralNetwork *network,
+				  const double *input, const double *expected,
+				  Gradient *gradient) {
+	size_t input_size = network->input_size;
+	size_t hidden_size = network->hidden_size;
+	size_t output_size = network->output_size;
+
+	// output layer: delta_k = output_k - expected_k (softmax + entropy)
+	for (size_t k = 0; k < output_size; k++) {
+		double delta = network->output[k] - expected[k];
+
+		gradient->output_bias[k] += delta;
+		for (size_t i = 0; i < hidden_size; i++) {
+			gradient->output_weights[k * hidden_size + i] +=
+			    delta * network->hidden[i];
+		}
+	}
+
+	// hidden layer: error back from the outputs, times the sigmoid slope
+	for (size_t i = 0; i < hidden_size; i++) {
+		double error = 0.0;
+
+		for (size_t k = 0; k < output_size; k++) {
+			error += (network->output[k] - expected[k]) *
+				 network->output_weights[k * hidden_size + i];
+		}
+		double delta =
+		    error * network->hidden[i] * (1.0 - network->hidden[i]);
+
+		gradient->hidden_bias[i] += delta;
+		for (size_t j = 0; j < input_size; j++) {
+			gradient->hidden_weights[i * input_size + j] +=
+			    delta * input[j];
+		}
+	}
+}
+
 Gradient *neural_network_backward(NeuralNetwork *network, const double *input,
 				  const double *expected) {
 	Gradient *gradient = gradient_create(network);
 	if (!gradient) {
 		return NULL;
 	}
-
-	double *output_delta = calloc(network->output_size, sizeof(double));
-	double *hidden_delta = calloc(network->hidden_size, sizeof(double));
-	if (!output_delta || !hidden_delta) {
-		free(hidden_delta);
-		free(output_delta);
-		gradient_destroy(gradient);
-		return NULL;
-	}
-
-	// output delta
-	for (size_t k = 0; k < network->output_size; k++) {
-		output_delta[k] = network->output[k] - expected[k];
-	}
-
-	// output gradient
-	for (size_t k = 0; k < network->output_size; k++) {
-		gradient->output_bias[k] = output_delta[k];
-
-		for (size_t i = 0; i < network->hidden_size; i++) {
-			gradient->output_weights[k * network->hidden_size + i] =
-			    output_delta[k] * network->hidden[i];
-		}
-	}
-
-	// hidden delta
-	for (size_t i = 0; i < network->hidden_size; i++) {
-		double error = 0.0;
-
-		for (size_t k = 0; k < network->output_size; k++) {
-			error +=
-			    output_delta[k] *
-			    network
-				->output_weights[k * network->hidden_size + i];
-		}
-
-		hidden_delta[i] =
-		    error * network->hidden[i] * (1.0 - network->hidden[i]);
-	}
-
-	// hidden gradient
-	for (size_t i = 0; i < network->hidden_size; i++) {
-		gradient->hidden_bias[i] = hidden_delta[i];
-
-		for (size_t j = 0; j < network->input_size; j++) {
-			gradient->hidden_weights[i * network->input_size + j] =
-			    hidden_delta[i] * input[j];
-		}
-	}
-
-	free(output_delta);
-	free(hidden_delta);
+	neural_network_backward_add(network, input, expected, gradient);
 	return gradient;
 }
 
@@ -223,10 +209,35 @@ void neural_network_gradient_descent(NeuralNetwork *network,
 	}
 }
 
+/* Shuffles the `size` indices of `order` (Fisher-Yates). */
+static void shuffle(size_t *order, size_t size) {
+	for (size_t i = size - 1; i > 0; i--) {
+		size_t j = (size_t)rand() % (i + 1);
+		size_t tmp = order[i];
+
+		order[i] = order[j];
+		order[j] = tmp;
+	}
+}
+
 void neural_network_train(NeuralNetwork *network, Dataset *dataset,
-			  size_t epochs, double learning_rate) {
-	if (!network || !dataset || dataset->size == 0 || epochs == 0) {
+			  size_t epochs, double learning_rate,
+			  size_t batch_size) {
+	if (!network || !dataset || dataset->size == 0 || epochs == 0 ||
+	    batch_size == 0) {
 		return;
+	}
+
+	size_t size = dataset->size;
+	size_t *order = malloc(size * sizeof(size_t));
+	Gradient *gradient = gradient_create(network);
+	if (!order || !gradient) {
+		free(order);
+		gradient_destroy(gradient);
+		return;
+	}
+	for (size_t i = 0; i < size; i++) {
+		order[i] = i;
 	}
 
 	// print the loss about 4 times, at least once per epoch if epochs < 4
@@ -235,31 +246,42 @@ void neural_network_train(NeuralNetwork *network, Dataset *dataset,
 	for (size_t epoch = 0; epoch < epochs; epoch++) {
 		double total_loss = 0.0;
 
-		for (size_t i = 0; i < dataset->size; i++) {
-			TrainingExample *example = &dataset->examples[i];
+		// the dataset itself is never reordered (see dataset_free)
+		shuffle(order, size);
 
-			neural_network_forward(network, example->input);
-			total_loss +=
-			    cross_entropy(example->expected, network->output,
-					  network->output_size);
+		for (size_t start = 0; start < size; start += batch_size) {
+			size_t count = size - start < batch_size
+					   ? size - start
+					   : batch_size;
 
-			Gradient *gradient = neural_network_backward(
-			    network, example->input, example->expected);
+			gradient_reset(gradient, network);
+			for (size_t i = start; i < start + count; i++) {
+				TrainingExample *example =
+				    &dataset->examples[order[i]];
 
-			if (!gradient) {
-				return;
+				neural_network_forward(network,
+						       example->input);
+				total_loss += cross_entropy(
+				    example->expected, network->output,
+				    network->output_size);
+				neural_network_backward_add(
+				    network, example->input,
+				    example->expected, gradient);
 			}
 
-			neural_network_gradient_descent(network, gradient,
-							learning_rate);
-
-			gradient_destroy(gradient);
+			// one update per batch, with the mean gradient
+			neural_network_gradient_descent(
+			    network, gradient, learning_rate / (double)count);
 		}
+
 		if (epoch % log_step == 0 || epoch == epochs - 1) {
 			printf("Epoch %zu/%zu - loss: %.6f\n", epoch + 1,
-			       epochs, total_loss / (double)dataset->size);
+			       epochs, total_loss / (double)size);
 		}
 	}
+
+	free(order);
+	gradient_destroy(gradient);
 }
 
 void neural_network_predict(NeuralNetwork *network, const double *input,
