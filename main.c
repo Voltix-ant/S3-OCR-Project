@@ -55,7 +55,9 @@ int main(int argc, char *argv[])
 
 	// Application of the pretreatment functions
 	grayscale(og_img);
+	gaussian_blur(og_img);
 	adaptive_threshold(og_img);
+	denoise_binarized(og_img);
 
 	// Creation of the rendering texture
 	SDL_Texture *og_tex = SDL_CreateTextureFromSurface(renderer, og_img);

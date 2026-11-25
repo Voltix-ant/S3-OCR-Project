@@ -230,3 +230,135 @@ struct matrix *surface_to_matrix(SDL_Surface *s) {
     SDL_UnlockSurface(s);
     return mat;
 }
+
+// FILTERS
+
+int gaussian_blur(SDL_Surface *surface)
+{
+    /*
+    Applies a small blurring algorithm with a 3-pixel radius gaussian kernel
+    for level 2 images.
+
+    Kernel weights (pixel per pixel):
+
+        1 2 1
+        2 4 2
+        1 2 1
+    
+    Returns 0 on success, 1 otherwise.
+    */
+
+    if (!surface) return 1;
+
+    int w = surface->w;
+    int h = surface->h;
+
+    SDL_Surface *copy = SDL_ConvertSurfaceFormat(
+        surface,
+        surface->format->format,
+        0
+    );
+    if (!copy) return 1;
+
+    for (int y = 1; y < h-1; y++)
+    {
+        for (int x = 1; x < w-1; x++)
+        {
+            int sum = 0;
+
+            // Top line
+            sum += ((get_pixel(copy, x - 1, y - 1) >> 16) & 0xFF) * 1;
+            sum += ((get_pixel(copy, x, y - 1) >> 16) & 0xFF) * 2;
+            sum += ((get_pixel(copy, x + 1, y - 1) >> 16) & 0xFF) * 1;
+
+            // Middle line
+            sum += ((get_pixel(copy, x - 1, y) >> 16) & 0xFF) * 2;
+            sum += ((get_pixel(copy, x, y) >> 16) & 0xFF) * 4;
+            sum += ((get_pixel(copy, x + 1, y) >> 16) & 0xFF) * 2;
+
+            // Bottom line
+            sum += ((get_pixel(copy, x - 1, y + 1) >> 16) & 0xFF) * 1;
+            sum += ((get_pixel(copy, x, y + 1) >> 16) & 0xFF) * 2;
+            sum += ((get_pixel(copy, x + 1, y + 1) >> 16) & 0xFF) * 1;
+
+            Uint8 res = (Uint8)(sum/16);
+            set_pixel(
+                surface,
+                x,
+                y,
+                SDL_MapRGB(surface->format, res, res, res)
+            );
+        }
+    }
+
+    SDL_FreeSurface(copy);
+    return 0;
+}
+
+static int is_white(SDL_Surface *surface, int x, int y)
+{
+    // Checks if the pixel at position (x,y) in the surface is white.
+    // Returns 1 if it is white, 0 otherwise.
+    return ((get_pixel(surface, x, y) >> 16) & 0xFF) >= 128;
+}
+
+int denoise_binarized(SDL_Surface *surface)
+{
+    /*
+    Applies a filter algorithm to an already binarized image that removes
+    the speckle noise caused by isolated pixels.
+
+    For each black pixel, the algorithm checks the 16 pixels forming a 2-pixel
+    radius 5x5 square of which it is the center. If all these pixels are
+    white, then the current black pixel is set to white. Otherwise it does not
+    change.
+
+    Returns 0 on success, 1 otherwise.
+    */
+
+    if (!surface) return 1;
+
+    int w = surface->w;
+    int h = surface->h;
+
+    SDL_Surface *copy = SDL_ConvertSurfaceFormat(
+        surface,
+        surface->format->format,
+        0
+    );
+    if (!copy) return 1;
+
+    for (int y = 2; y < h-2; y++)
+    {
+        for (int x = 2; x < w-2; x++)
+        {
+            // check if pixel is already white
+            if (is_white(surface, x, y)) continue;
+
+            int isolated = 1;
+            for (int d = -2; d <= 2 && isolated; d++)
+            {
+                if (!is_white(copy, x+d, y-2) ||
+                    !is_white(copy, x+d, y+2) ||
+                    !is_white(copy, x-2, y+d) ||
+                    !is_white(copy, x+2, y+d))
+                {
+                    isolated = 0;
+                }
+            }
+            
+            if (isolated)
+            {
+                set_pixel(
+                    surface,
+                    x,
+                    y,
+                    SDL_MapRGB(surface->format, 255, 255, 255)
+                );
+            }
+        }
+    }
+
+    SDL_FreeSurface(copy);
+    return 0;
+}
