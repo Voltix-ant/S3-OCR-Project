@@ -77,5 +77,7 @@ clean:
 	$(RM) $(UI_OBJ)
 	# pretreatment
 	$(RM) $(PRETREATMENT_OBJ)
+	# result
+	$(RM) -f result.png
 
 .PHONY: all analysis neuralnetwork train clean
