@@ -35,7 +35,7 @@ RotationDevice create_rotation_device(SDL_Rect panel);
 void update_slider(RotationDevice *slider, SDL_Event *event);
 void display_slider(SDL_Renderer *renderer, RotationDevice slider);
 
-void update_buttons_pos(Button *buttons, SDL_Rect panel);
+void update_buttons_pos(Button *buttons, SDL_Rect panel, SDL_Rect preview);
 int update_buttons(Button *buttons, int nb_btns, SDL_Event *event);
 void display_buttons(SDL_Renderer *renderer, Button *buttons, int nb_btns);
 

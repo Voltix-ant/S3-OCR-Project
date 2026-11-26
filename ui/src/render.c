@@ -177,7 +177,7 @@ SDL_Rect get_fitted_rect(SDL_Rect preview, int img_w, int img_h)
     return fitted;
 }
 
-void update_buttons_pos(Button *buttons, SDL_Rect panel)
+void update_buttons_pos(Button *buttons, SDL_Rect panel, SDL_Rect preview)
 {
     // Updates the buttons' positions and shapes when the window gets resized.
 
@@ -196,6 +196,20 @@ void update_buttons_pos(Button *buttons, SDL_Rect panel)
     buttons[1].rect.h = btn_h;
     buttons[1].rect.x = btn_x;
     buttons[1].rect.y = panel.y + panel.h * 3/4 - btn_h / 2;
+
+    // "Switch to preview" button
+    buttons[2].rect.w = preview.w / 5;
+    buttons[2].rect.h = panel.h + panel.y - preview.h - preview.y - 16;
+    buttons[2].rect.x = preview.x + preview.w / 2 - buttons[2].rect.w - 10;
+    buttons[2].rect.y = preview.y + preview.h + 8;
+    if (buttons[2].rect.h < 28) buttons[2].rect.h = 28;
+
+    // "Switch to result" button
+    buttons[3].rect.w = preview.w / 5;
+    buttons[3].rect.h = panel.h + panel.y - preview.h - preview.y - 16;
+    buttons[3].rect.x = preview.x + preview.w / 2 + 10;
+    buttons[3].rect.y = preview.y + preview.h + 8;
+    if (buttons[3].rect.h < 28) buttons[3].rect.h = 28;
 }
 
 int update_buttons(Button *buttons, int nb_btns, SDL_Event *event)
