@@ -53,6 +53,11 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	SDL_Surface *res_img = NULL; // no result yet
+
+	// VIEW MODE: preview mode = 0, result mode = 1
+	int view_mode = 0;
+
 	// Application of the pretreatment functions
 	grayscale(og_img);
 	gaussian_blur(og_img);
@@ -69,39 +74,38 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	SDL_Texture *res_tex = NULL;
+	int res_w = 0;
+	int res_h = 0;
+
     // Retrieving image dimensions
     int img_w, img_h;
     SDL_QueryTexture(og_tex, NULL, NULL, &img_w, &img_h);
 
 	// Creating all the interface's buttons
-	int nb_buttons = 2;
+	int nb_buttons = 4;
 	Button buttons[nb_buttons];
 	// "Save image" button
 	buttons[0].is_active = 0; // Saving an image can only be done after analysis
 	buttons[0].is_hovered = 0;
 	buttons[0].text = IMG_LoadTexture(renderer, "ui/assets/save_image.png");
-	if (!buttons[0].text)
-	{
-		printf("Error loading button texture: %s\n", IMG_GetError());
-		SDL_DestroyTexture(og_tex);
-		terminate(window, renderer);
-		IMG_Quit();
-		return 1;
-	}
+
 	// "Start analysis" button
 	buttons[1].is_active = 1;
 	buttons[1].is_hovered = 0;
 	buttons[1].text = IMG_LoadTexture(renderer, "ui/assets/start_analysis.png");
-	if (!buttons[1].text)
-	{
-		printf("Error loading button texture: %s\n", IMG_GetError());
-		SDL_DestroyTexture(buttons[0].text);
-		SDL_DestroyTexture(og_tex);
-		terminate(window, renderer);
-		IMG_Quit();
-		return 1;
-	}
-	update_buttons_pos(buttons, panel); // initialize button positions
+
+	// "Switch to preview" button
+	buttons[2].is_active = 0;
+	buttons[2].is_hovered = 0;
+	buttons[2].text = IMG_LoadTexture(renderer, "ui/assets/preview.png");
+
+	// "Switch to result" button
+	buttons[3].is_active = 0;
+	buttons[3].is_hovered = 0;
+	buttons[3].text = IMG_LoadTexture(renderer, "ui/assets/result.png");
+
+	update_buttons_pos(buttons, panel, preview); // initialize button positions
 
 	// MAIN LOOP
 	int running = 1;
@@ -133,7 +137,7 @@ int main(int argc, char *argv[])
                 slider.cursor.x = mx - slider.cursor.w / 2;
                 slider.cursor.y = slider.axis.y - 14;
 
-				update_buttons_pos(buttons, panel);
+				update_buttons_pos(buttons, panel, preview);
             }
 
 			// Update slider and buttons
@@ -141,7 +145,17 @@ int main(int argc, char *argv[])
 			int btn_index = update_buttons(buttons, nb_buttons, &event);
 			if (btn_index == 0) // SAVE IMAGE
 			{
-				printf("DEBUG: \"Save image\" button clicked.\n"); // TO REPLACE
+				if (res_img)
+				{
+					if (IMG_SavePNG(res_img, "result.png"))
+					{
+						printf("Error saving image: %s\n", IMG_GetError());
+					}
+					else
+					{
+						printf("Saved result to \"result.png\".\n");
+					}
+				}
 			}
 			else if (btn_index == 1) // START ANALYSIS
 			{
@@ -160,9 +174,40 @@ int main(int argc, char *argv[])
                 // Save debug images
                 analysis_save_debug(a, rot);
                 
-                analysis_destroy(a);
-                destroy_matrix(mat);
-                SDL_FreeSurface(rot);
+				// TODO here: call the function that draws the resulting image 
+
+				SDL_FreeSurface(res_img);
+				res_img = rot;
+				res_w = res_img->w;
+				res_h = res_img->h;
+				SDL_DestroyTexture(res_tex);
+				res_tex = SDL_CreateTextureFromSurface(renderer, res_img);
+
+				// Switching automatically to result mode
+				buttons[0].is_active = 1;
+				buttons[1].is_active = 0;
+				buttons[2].is_active = 1;
+				buttons[3].is_active = 0;
+				view_mode = 1;
+
+				analysis_destroy(a);
+				destroy_matrix(mat);
+			}
+			else if (btn_index == 2) // switch to preview mode
+			{
+				buttons[0].is_active = 0;
+				buttons[1].is_active = 1;
+				buttons[2].is_active = 0;
+				buttons[3].is_active = 1;
+				view_mode = 0;
+			}
+			else if (btn_index == 3) // switch to result mode
+			{
+				buttons[0].is_active = 1;
+				buttons[1].is_active = 0;
+				buttons[2].is_active = 1;
+				buttons[3].is_active = 0;
+				view_mode = 1;
 			}
 		}
 
@@ -182,22 +227,27 @@ int main(int argc, char *argv[])
 		display_buttons(renderer, buttons, nb_buttons);
         display_slider(renderer, slider);
 
-		// Display of the preview image
-		// NOTE: this is also where the 'result' image should be displayed,
-		// so remember to check which one has to be displayed currently
-		// (buttons to choose to display 'preview' or 'result'!!!)
-        SDL_Rect fitted_preview = get_fitted_rect(preview, img_w, img_h);
-        SDL_RenderSetClipRect(renderer, &preview);
-        SDL_RenderCopyEx(
-			renderer,
-            og_tex,
-            NULL,
-            &fitted_preview,
-            (double)slider.angle,
-            NULL,
-            SDL_FLIP_NONE
-            );
-		display_preview_grid(renderer, preview);
+		// Display of the preview OR result image
+		if (view_mode == 0)
+		{
+			SDL_Rect fitted_preview = get_fitted_rect(preview, img_w, img_h);
+			SDL_RenderSetClipRect(renderer, &preview);
+			SDL_RenderCopyEx(
+				renderer,
+				og_tex,
+				NULL,
+				&fitted_preview,
+				(double)slider.angle,
+				NULL,
+				SDL_FLIP_NONE
+				);
+			display_preview_grid(renderer, preview);
+		}
+		else if (view_mode == 1 && res_tex)
+		{
+			SDL_Rect fitted_result = get_fitted_rect(preview, res_w, res_h);
+			SDL_RenderCopy(renderer, res_tex, NULL, &fitted_result);
+		}
         SDL_RenderSetClipRect(renderer, NULL);
 
 		SDL_RenderPresent(renderer);
@@ -205,9 +255,12 @@ int main(int argc, char *argv[])
         SDL_Delay(1000/60);
     }
 
+	for (int i = 0; i < nb_buttons; i++) SDL_DestroyTexture(buttons[i].text);
 	SDL_DestroyTexture(og_tex);
+	SDL_DestroyTexture(res_tex);
 	IMG_Quit();
 	SDL_FreeSurface(og_img);
+	SDL_FreeSurface(res_img);
     terminate(window, renderer);
 
     return 0;
