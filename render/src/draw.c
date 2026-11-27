@@ -21,6 +21,12 @@ static void blend_pixel(SDL_Surface *s, int x, int y, SDL_Color color,
     *p = SDL_MapRGBA(s->format, r, g, b, a);   // alpha channel unchanged
 }
 
+SDL_Color word_color(size_t i) {
+    /* Color of the word of index i. Loops over the palette if there are
+    more words than colors. */
+    return WORD_COLORS[i % NB_WORD_COLORS];
+}
+
 void draw_highlight(SDL_Surface *s, double ax, double ay, double bx, double by,
                     double radius, SDL_Color color, double alpha) {
     /* This function draw a pill shape from points a to b of certain radius.*/
