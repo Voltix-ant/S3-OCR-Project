@@ -17,13 +17,14 @@ int main(void) {
     if (!a)
         errx(1, "Analysis failed : no grid found");
 
-    struct found_word words[3] = {
+    struct found_word words[4] = {
         {1,3,1,8,1},
         {1,2,3,2,12},
+        {0,1,1,1,1},
         {1,4,4,10,10}
     };
 
-    draw_solution(s, a, words, 3);
+    draw_solution(s, a, words, 4);
 
     save_result(s,"test-render.png");
 

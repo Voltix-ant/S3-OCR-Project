@@ -72,3 +72,43 @@ void draw_highlight(SDL_Surface *s, double ax, double ay, double bx, double by,
 
     if (SDL_MUSTLOCK(s)) SDL_UnlockSurface(s);
 }
+
+void draw_frame(SDL_Surface *s, double ax, double ay, double bx, double by,
+                double radius) {
+    /* This function draws the outline of the rectangle that contains the
+    pill shape from a to b of the given radius (same parameters as
+    draw_highlight). Meant for horizontal words : the rectangle is not
+    rotated. The thickness of the outline is deduced from the radius. */
+
+    if (!s || s->format->BytesPerPixel != 4 || radius <= 0) return;
+
+    // Outer limits of the frame (not clamped yet, to know where the edges are)
+    int left   = (int)floor(fmin(ax, bx) - radius);
+    int right  = (int)ceil (fmax(ax, bx) + radius);
+    int top    = (int)floor(fmin(ay, by) - radius);
+    int bottom = (int)ceil (fmax(ay, by) + radius);
+
+    int thick = (int)(0.15 * radius + 0.5);
+    if (thick < 2) thick = 2;
+
+    // Pixels actually visited : the frame clamped to the surface
+    int x_min = left   < 0 ? 0 : left;
+    int y_min = top    < 0 ? 0 : top;
+    int x_max = right  >= s->w ? s->w - 1 : right;
+    int y_max = bottom >= s->h ? s->h - 1 : bottom;
+
+    if (SDL_MUSTLOCK(s)) SDL_LockSurface(s);
+
+    SDL_Color c = {255,0,0,255};
+    for (int y = y_min; y <= y_max; y++) {
+        for (int x = x_min; x <= x_max; x++) {
+            // a pixel belongs to the outline if it is close to one edge
+            int on_edge = x < left + thick || x > right - thick
+                       || y < top + thick  || y > bottom - thick;
+            if (on_edge)
+                blend_pixel(s, x, y, c, 1.0);
+        }
+    }
+
+    if (SDL_MUSTLOCK(s)) SDL_UnlockSurface(s);
+}

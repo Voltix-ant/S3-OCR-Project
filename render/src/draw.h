@@ -46,5 +46,7 @@ SDL_Color word_color(size_t i);
 
 void draw_highlight(SDL_Surface *s, double ax, double ay, double bx, double by,
                     double radius, SDL_Color color, double alpha);
+void draw_frame(SDL_Surface *s, double ax, double ay, double bx, double by,
+                double radius);
 
 #endif

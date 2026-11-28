@@ -127,16 +127,19 @@ void draw_solution(SDL_Surface *s, const struct analysis *a,
 
     compute_avg_ctr(a,&row_y,&col_x,&grid_radius);
     for (size_t w = 0; w < nb_words; w++) {
+        double ax,bx,y,wl_radius;
+        word_capsule(a, w, &ax, &bx, &y, &wl_radius);
         if (words[w].found) {
             // capsul in the wordlist :
-            double ax,bx,y,wl_radius;
-            word_capsule(a, w, &ax, &bx, &y, &wl_radius);
             draw_highlight(s, ax, y, bx, y, wl_radius, word_color(w), alpha);
 
             // capsul in grid :
             draw_highlight(s, col_x[words[w].c1], row_y[words[w].r1],
                               col_x[words[w].c2], row_y[words[w].r2],
                     grid_radius, word_color(w), alpha);
+        } else {
+            draw_frame(s, ax, y, bx, y, wl_radius);
+
         }
     }
 
