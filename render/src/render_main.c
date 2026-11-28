@@ -1,22 +1,35 @@
-#include "draw.h"
+#include "solution_image.h"
 #include "analysis/src/debug_draw.h"
 #include "analysis/src/image_io.h"
+#include "analysis/src/analysis.h"
+#include "common/src/word_result.h"
 #include <err.h>
 
-int main(int argc, char **argv) {
-    if (argc != 2)
-        errx(1, "Incorrect number of parameters");
+int main(void) {
     
-    SDL_Surface *s = load_image(argv[1]);
+    SDL_Surface *s = load_image("img_test/lvl1-img1.png");
+    struct matrix *mat = img_to_matrix(s);
+    
+    binarize_matrix(mat, mat->width/20, 10);
 
+    // run the actual analysis
+    struct analysis *a = analysis_run(mat);
+    if (!a)
+        errx(1, "Analysis failed : no grid found");
 
-    draw_highlight(s, 100, 100, 400, 100, 20.0, word_color(0), 0.4);
-    draw_highlight(s, 100, 200, 100, 500, 10.0, word_color(1), 0.4);
-    draw_highlight(s, 200, 200, 600, 600, 30.0, word_color(2), 0.4);
-    draw_highlight(s, 600, 200, 200, 600, 20.0, word_color(3), 0.4);
+    struct found_word words[3] = {
+        {1,3,1,8,1},
+        {1,2,3,2,12},
+        {1,4,4,10,10}
+    };
+
+    draw_solution(s, a, words, 3);
+
     save_result(s,"test-render.png");
 
     
+    analysis_destroy(a);
+    destroy_matrix(mat);
     SDL_FreeSurface(s);
 
 

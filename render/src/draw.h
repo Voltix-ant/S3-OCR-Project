@@ -6,7 +6,6 @@
 #include <stddef.h>
 
 /* Array of colors each one the most distinct possible from the other ones to
-Plug 'artanikin/vim-synthwave84'
    draw the capsuls. */
 static const SDL_Color WORD_COLORS[] = {
     {230,  40,  40, 255},
